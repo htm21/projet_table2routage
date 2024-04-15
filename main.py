@@ -7,10 +7,11 @@ def main() :
 
     net = Network()
 
+    print(f" NODES BEFORE CREATION : {net.nodes}")
     net.creation_nodes()
+    net.link_creation()
     print(net.connections)
-    print()
-    print(net.nodes)
+   
 
 
 if __name__ == "__main__" :
