@@ -1,36 +1,34 @@
-import random as rd
+class Node:
+    def __init__(self, node_type: str) -> None:
+        self.type = node_type
+        self.id = None  
 
-class Node :
-    instance_counter : int = 0
-
-    def __init__(self, name : str, type : str) -> None:
-        Node.instance_counter += 1
-        self.name = name
-        self.id = Node.instance_counter
-        self.type = type
+    def __repr__(self) -> str:
+        return f"{self.type} n°{self.id}"
 
 
-class Tier1(Node) : 
-    instance_counter : int = 0
-    def __init__(self, name : str, type : str = "Tier1") -> None:
-        super().__init__(name, type)
-        Node.instance_counter += 1
+class Tier1(Node):
+    instance_counter = 0
+
+    def __init__(self) -> None:
+        super().__init__("Tier1")
         Tier1.instance_counter += 1
+        self.id = Tier1.instance_counter
 
 
 class Tier2(Node):
-    instance_counter : int = 0
+    instance_counter = 0
 
-    def __init__(self, name : str, type : str = "Tier2") -> None:
-        super().__init__(name, type)
-        Node.instance_counter += 1
+    def __init__(self) -> None:
+        super().__init__("Tier2")
         Tier2.instance_counter += 1
+        self.id = Tier2.instance_counter
 
 
-class Tier3(Node) :
-    instance_counter : int = 0
+class Tier3(Node):
+    instance_counter = 0
 
-    def __init__(self, name : str, type: str = "Tier3") -> None:
-        super().__init__(name, type)
-        Node.instance_counter += 1
+    def __init__(self) -> None:
+        super().__init__("Tier3")
         Tier3.instance_counter += 1
+        self.id = Tier3.instance_counter

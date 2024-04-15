@@ -7,19 +7,27 @@ import random as rd
 class Network :
 
     def __init__(self) -> None:
-        self.connections = []
-        self.nodes : dict[ str or int : Node] = {}     
+        self.connections = {}
+        self.nodes : list = []
     
-    
-    def link_creation(self, node1, node2) :
-
-        if node1.type == "Tier1" :
-
-            if node2.type == "Tier1" :
-                if Tier1.instance_counter < 10 and rd.random() > 0.75:
-                    
-                    poids = rd.randint(5,11)
-                    self.connections.append((node1, node2, poids))
+    def creation_nodes(self) :
+        
+        for _ in range(10) :
+            node = Tier1()
+            self.nodes.append(node)
+            self.connections[node] = []
+        
+        for _ in range(20) :
+            node = Tier2()
+            self.nodes.append(node)
+            self.connections[node] = []
+        
+        for _ in range(70) :
+            node = Tier3()
+            self.nodes.append(node)
+            self.connections[node] = []
             
-            if node2.type == "Tier2" :
-                pass
+
+    
+    def link_creation(self) :
+        pass

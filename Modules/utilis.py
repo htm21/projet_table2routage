@@ -7,4 +7,3 @@ NODE_TYPE : dict[str : Node] = {
     "Tier3" : Tier3,
     "Node" : Node
 }
-
