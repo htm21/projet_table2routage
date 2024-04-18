@@ -6,10 +6,8 @@ def main() :
 
 
     net = Network()
-
-    print(f" NODES BEFORE CREATION : {net.nodes}")
     net.creation_nodes()
-    net.link_creation()
+    net.graph_creation()
     print(net.connections)
    
 
