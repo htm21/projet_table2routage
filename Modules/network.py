@@ -38,9 +38,9 @@ class Network :
                         self.connections[node1].append((node2, poids))
                         self.connections[node2].append((node1, poids))
 
+
+
             elif node1.type == "Tier2" :
-                nb_t1 = rd.randint(1,2)
-                nb_t2 = rd.randint(2,3)
 
                 for node2 in self.nodes :
                     if node2.type == "Tier1" :
@@ -48,7 +48,7 @@ class Network :
                             continue
                         else :
                             T1 = len([node for node in self.connections[node1] if node[0].type == "Tier1"])
-                            if T1 < nb_t1 :
+                            if T1 < node1.nt1 :
                                 poids = rd.randint(10,20)
                                 self.connections[node1].append((node2, poids))
                                 self.connections[node2].append((node1, poids))
@@ -57,8 +57,9 @@ class Network :
                         if node2 in self.connections[node1] : 
                             continue
                         else :
-                            T2 = len([node for node in self.connections[node1] if node[0].type == "Tier2"])
-                            if T2 < nb_t2 :
+                            node1_T2 = len([node for node in self.connections[node1] if node[0].type == "Tier2"])
+                            node2_T2 = len([node for node in self.connections[node2] if node[0].type == "Tier2"])
+                            if node1_T2 < node1.nt2 and node2_T2 < node2.nt2 :
                                 poids = rd.randint(10,20)
                                 self.connections[node1].append((node2, poids))
                                 self.connections[node2].append((node1, poids))
