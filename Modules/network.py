@@ -25,10 +25,15 @@ class Network :
             node = Tier3()
             self.nodes.append(node)
             self.connections[node] = []
-            
+    
+    def test(self) :
+        rd.shuffle(self.nodes)
+        print(self.nodes)
+
     def graph_creation(self) :
 
         rd.shuffle(self.nodes)
+        print(self.nodes)
         for node1 in self.nodes :
             if node1.type == "Tier1" :
 
@@ -38,8 +43,6 @@ class Network :
                         self.connections[node1].append((node2, poids))
                         self.connections[node2].append((node1, poids))
 
-
-
             elif node1.type == "Tier2" :
 
                 for node2 in self.nodes :
@@ -48,7 +51,8 @@ class Network :
                             continue
                         else :
                             T1 = len([node for node in self.connections[node1] if node[0].type == "Tier1"])
-                            if T1 < node1.nt1 :
+                            N2_T2 = len([node for node in self.connections[node2] if node[0].type == "Tier2"])
+                            if T1 < node1.nt1 and N2_T2 < node2.nt2 :
                                 poids = rd.randint(10,20)
                                 self.connections[node1].append((node2, poids))
                                 self.connections[node2].append((node1, poids))
@@ -63,14 +67,21 @@ class Network :
                                 poids = rd.randint(10,20)
                                 self.connections[node1].append((node2, poids))
                                 self.connections[node2].append((node1, poids))
-
-
-
             
-            
+            elif node1.type == "Tier3":
+                potential_tier2_nodes = [node for node in self.nodes if node.type == "Tier2"]
+                connected_tier2_nodes = []
 
-        
-
-                    
-            
-            
+                
+                while len(connected_tier2_nodes) < 2:
+                   
+                    potential_tier2_nodes.sort(key=lambda x: len([node for node in self.connections[x] if node[0].type == "Tier3"]))
+                    for node2 in potential_tier2_nodes:
+                        if node2 not in connected_tier2_nodes:
+                            if node2 not in [conn[0] for conn in self.connections[node1]]:
+                                poids = rd.randint(20, 50)
+                                self.connections[node1].append((node2, poids))
+                                self.connections[node2].append((node1, poids))
+                                connected_tier2_nodes.append(node2)
+                                if len(connected_tier2_nodes) == 2:
+                                    break

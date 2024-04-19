@@ -9,8 +9,10 @@ def main() :
     net.creation_nodes()
     net.graph_creation()
     for key, val in (net.connections).items() :
-        print(f" {key}      :      {val} \n")
+        print(f" {key}      -->      {val} \n")
+
    
+
 
 
 if __name__ == "__main__" :

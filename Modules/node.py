@@ -18,6 +18,7 @@ class Tier1(Node):
         super().__init__("Tier1")
         Tier1.instance_counter += 1
         self.id = Tier1.instance_counter
+        self.nt2 = 4
 
 
 class Tier2(Node):
@@ -29,6 +30,7 @@ class Tier2(Node):
         self.id = Tier2.instance_counter
         self.nt1 = rd.randint(1,2)
         self.nt2 = rd.randint(2,3)
+        self.nt3 = 4
 
 
 
@@ -39,3 +41,4 @@ class Tier3(Node):
         super().__init__("Tier3")
         Tier3.instance_counter += 1
         self.id = Tier3.instance_counter
+        self.nt2 = 2
