@@ -8,7 +8,8 @@ def main() :
     net = Network()
     net.creation_nodes()
     net.graph_creation()
-    print(net.connections)
+    for key, val in (net.connections).items() :
+        print(f" {key}      :      {val} \n")
    
 
 

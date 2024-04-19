@@ -1,7 +1,11 @@
+import random as rd
+
 class Node:
     def __init__(self, node_type: str) -> None:
         self.type = node_type
-        self.id = None  
+        self.id = None
+        self.nt1 = None
+        self.nt2 = None
 
     def __repr__(self) -> str:
         return f"{self.type} n°{self.id}"
@@ -23,6 +27,9 @@ class Tier2(Node):
         super().__init__("Tier2")
         Tier2.instance_counter += 1
         self.id = Tier2.instance_counter
+        self.nt1 = rd.randint(1,2)
+        self.nt2 = rd.randint(2,3)
+
 
 
 class Tier3(Node):
