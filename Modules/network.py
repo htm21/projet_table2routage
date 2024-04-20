@@ -8,7 +8,7 @@ class Network :                             # Création de la class Network
         self.connections = {}               # un Network contient des connections entre Nodes (c.f Association des Nodes)
         self.nodes : list = []              # un Network contient aussi une liste de Nodes (ça serait bête sinon)
 
-    def nodes_creation(self) :              # La fonction qui va créer nos Nodes de manère uniforme !!
+    def nodes_creation(self) -> None :      # La fonction qui va créer nos Nodes de manère uniforme !!
         
         for _ in range(10) :                # On veut 10 Tier1
             node = Tier1()
@@ -24,12 +24,12 @@ class Network :                             # Création de la class Network
             node = Tier3()
             self.nodes.append(node)
             self.connections[node] = []
-    
-    def test(self) :
-        rd.shuffle(self.nodes)
-        print(self.nodes)
 
-    def graph_creation(self) :
+    ######################################## CRÉATION DU GRAPHE NON ORIENTÉ DU RÉSEAU ########################################################################
+
+
+    def graph_creation(self) -> None :
+        ''' Fonction qui créer un graphe non-orienté, avec des poids en fonction des types de Noeuds'''
 
         rd.shuffle(self.nodes)                # On mélange le tout, (évite de toujours avoir le même type à la chaine)                  
         for node1 in self.nodes :             # C'EST PARTI 
@@ -87,3 +87,21 @@ class Network :                             # Création de la class Network
                                 if len(connected_tier2_nodes) == 2:                         # on vérifie si on a pas une amitié parfaite
                                     break                                                   # dans ce cas là on s'arrête là pour ce Node principal
 
+
+    ######################################## COMMENT VERIFIER SI UN GRAPH EST CONNEXE ? PARCOURS EN LARGEUR OU PROFONDEUR ########################################################################
+
+    
+    def PP(self, traiter, node) -> None :
+        ''' Fonction PP qui va faire le parcours en profondeur du Noeud en entrée en le stockant et de ses voisins'''    
+        if node not in traiter :                       
+            traiter.append(node)                       # si le Noeud n'est pas dans la liste traiter alors on l'ajoute
+            for connection in self.connections[node] : # on regard ses connections
+                self.PP(traiter, connection[0])        # et on effectue à leur tour un parcours en profondeur
+    
+    def main_dfs(self) -> bool :
+        ''' Fonction main du parcours en largeur, elle va créer la liste qui contiendra tout les noeuds atteint'''
+        traiter = []                                   # inventaire des noeuds "marquer"
+        depart = self.nodes[rd.randint(1,100)]         # il nous faut une racine pour démarer (on prend aléatoirement)
+        self.PP(traiter, depart)                       # on lance la fonction PP récursive
+        
+        return len(traiter) == len(self.nodes)         # on vérifie si la longueur de la liste "traiter" est égale la taille de la liste contenant tout les nodes (self.nodes)
