@@ -1,12 +1,18 @@
 from Modules.node import *                  # On importe les class des Nœuds créé pour pouvoir les utilisés
+from itertools import combinations
 
 import random as rd                         # On importe le module random pour générer quelque truc aléatoirement
 
 class Network :                             # Création de la class Network
 
     def __init__(self) -> None: 
-        self.connections = {}               # un Network contient des connections entre Nodes (c.f Association des Nodes)
-        self.nodes : list = []              # un Network contient aussi une liste de Nodes (ça serait bête sinon)
+        self.connections : dict[Node : list] = {}               # un Network contient des connections entre Nodes (c.f Association des Nodes)
+        self.nodes : list[Node] = []              # un Network contient aussi une liste de Nodes (ça serait bête sinon)
+        
+        self.tier1_nodes : list[Node] = []
+        self.tier2_nodes : list[Node] = []
+        self.tier3_nodes : list[Node] = []
+
 
     def nodes_creation(self) -> None :      # La fonction qui va créer nos Nodes de manère uniforme !!
         
@@ -14,19 +20,71 @@ class Network :                             # Création de la class Network
             node = Tier1()
             self.nodes.append(node)         # on l'ajoute à la liste des Nodes
             self.connections[node] = []     # création d'une clé pour pouvoir connaître les connections de chaque Node
+            self.tier1_nodes.append(node)
         
         for _ in range(20) :                # Même logique ...
             node = Tier2()
             self.nodes.append(node)
             self.connections[node] = []
+            self.tier2_nodes.append(node)
         
         for _ in range(70) :
             node = Tier3()
             self.nodes.append(node)
             self.connections[node] = []
+            self.tier3_nodes.append(node)
 
     ######################################## CRÉATION DU GRAPHE NON ORIENTÉ DU RÉSEAU ########################################################################
 
+
+    def connect_tier_1_nodes(self) -> None:
+        possible_connections = int((10 * (10 - 1)) / 2)
+        node_combinizations = list(combinations(self.tier1_nodes, 2))
+        connections = [rd.random() < 0.75 for _ in range(possible_connections)]
+
+        for index, connection in enumerate(connections):
+            if connection:
+                poids = rd.randint(5,10)
+                node_1, node_2 = node_combinizations[index][0], node_combinizations[index][1]
+                self.connections[node_1].append((node_2, poids)); self.connections[node_2].append((node_1, poids))
+
+
+    def connect_tier_2_nodes(self) -> None:
+        for node_1 in self.tier2_nodes:
+            
+            backbone_connections = rd.randint(1, 2)
+            while backbone_connections != 0:
+                node_2 = rd.choice(self.tier1_nodes) 
+                if node_2 not in self.connections[node_1]:
+                    poids = rd.randint(10,20) 
+                    self.connections[node_1].append((node_2, poids)); self.connections[node_2].append((node_1, poids))
+                    backbone_connections -= 1
+
+            transit_opertator_connections = rd.randint(2, 3)
+            while transit_opertator_connections != 0:
+                node_2 = rd.choice(self.tier2_nodes)
+                if node_2 not in self.connections[node_1] and node_1 != node_2:
+                    poids = rd.randint(10, 20) 
+                    self.connections[node_1].append((node_2, poids)); self.connections[node_2].append((node_1, poids))
+                    transit_opertator_connections -= 1
+
+
+    def connect_tier_3_nodes(self) -> None:
+        for node_1 in self.tier3_nodes:
+            opertator_connections = 2
+            while opertator_connections != 0:
+                node_2 = rd.choice(self.tier2_nodes)
+                if node_2 not in self.connections[node_1]:
+                    poids = rd.randint(20, 50) 
+                    self.connections[node_1].append((node_2, poids)); self.connections[node_2].append((node_1, poids))
+                    opertator_connections -= 1
+
+
+    def graph_creation_2(self) -> None:
+        self.connect_tier_1_nodes()
+        self.connect_tier_2_nodes()
+        self.connect_tier_3_nodes()
+         
 
     def graph_creation(self) -> None :
         ''' Fonction qui créer un graphe non-orienté, avec des poids en fonction des types de Noeuds'''
