@@ -145,6 +145,15 @@ class Network :                             # Création de la class Network
                                 if len(connected_tier2_nodes) == 2:                         # on vérifie si on a pas une amitié parfaite
                                     break                                                   # dans ce cas là on s'arrête là pour ce Node principal
 
+    
+    def check_doublon(self) :
+        for node in self.nodes :
+            dejavu = []
+            for element in self.connections[node] :
+                if element[0] in dejavu :
+                    print(f"ISSUE : {node} -> {element[0]} in {self.connections[node]} \n")
+                dejavu.append(element[0])  
+
 
     ######################################## COMMENT VERIFIER SI UN GRAPH EST CONNEXE ? PARCOURS EN LARGEUR OU PROFONDEUR ########################################################################
 
