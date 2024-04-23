@@ -55,7 +55,7 @@ class Network :                             # Création de la class Network
             backbone_connections = rd.randint(1, 2)
             while backbone_connections != 0:
                 node_2 = rd.choice(self.tier1_nodes) 
-                if not any(node_2 is node for node in self.connections[node_1]):
+                if not any([node_2 is node for node in self.connections[node_1]]):
                     poids = rd.randint(10,20) 
                     self.connections[node_1].append((node_2, poids)); self.connections[node_2].append((node_1, poids))
                     backbone_connections -= 1
@@ -63,7 +63,7 @@ class Network :                             # Création de la class Network
             transit_opertator_connections = rd.randint(2, 3)
             while transit_opertator_connections != 0:
                 node_2 = rd.choice(self.tier2_nodes)
-                if not any(node_2 is node for node in self.connections[node_1]) and node_1 is not node_2:
+                if not any([node_2 is node for node in self.connections[node_1]]) and node_1 is not node_2:
                     poids = rd.randint(10, 20) 
                     self.connections[node_1].append((node_2, poids)); self.connections[node_2].append((node_1, poids))
                     transit_opertator_connections -= 1
@@ -74,7 +74,7 @@ class Network :                             # Création de la class Network
             opertator_connections = 2
             while opertator_connections != 0:
                 node_2 = rd.choice(self.tier2_nodes)
-                if not any(node_2 is node for node in self.connections[node_1]):
+                if not any([node_2 is node for node in self.connections[node_1]]):
                     poids = rd.randint(20, 50) 
                     self.connections[node_1].append((node_2, poids)); self.connections[node_2].append((node_1, poids))
                     opertator_connections -= 1
