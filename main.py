@@ -13,9 +13,8 @@ def main() :
     #     print(f" {key}      -->      {val} \n")
     # print(net.main_dfs())
     
-    for node in net.connections:
-        print(f"{node.type : <6} {node.id : <3} | {net.connections[node]}")
-    net.graph_creation()
+    # for node in net.connections:
+    #     print(f"{node.type : <6} {node.id : <3} | {net.connections[node]}")
     net.check_doublon()
 
 if __name__ == "__main__" :
