@@ -154,3 +154,33 @@ class Network :                             # Création de la class Network
                 if neighbouring_node is path[index + 1]:
                     weight += connection[1]
         return weight
+
+
+    def next_hope(self, start_node) :
+        ''' Fonction qui forme la table de routage pour le noeud en entrée, utilisation de https://www.youtube.com/watch?v=LGiRB_lByh0&t=1027s '''
+        
+        distance = {node : float("inf") for node in self.connections}   # comme dans djikstra, on fixe tout les noeuds à distance "infini" 
+        distance[start_node] = 0                                        # alors que le node de départ "start_node" est nul
+
+        next_hope = {node : None for node in self.connections}          # de même pour le prochain noeud, ils sont tous nuls au départ
+        next_hope[start_node] = start_node                              # le prochain noeud pour atteindre le noeud de départ est lui même
+        
+        unvisited = set(self.connections.keys())
+
+        while unvisited :
+            current_node = min(unvisited, key= lambda node : distance[node])    # mini par rapport à leur distance, on prendra toujours start_node en premier car sa distance vaudra toujours 0
+            unvisited.remove(current_node)
+
+            for neighbor, weight in self.connections[current_node] :
+                if neighbor in unvisited :                      
+                    new_dist = distance[current_node] + weight  # on calcul la distance, si elle est meilleure (plus faible) => on mets à jour
+
+                    if new_dist < distance[neighbor] :      # dans djikstra, si la val est inférieur au poids actuelle
+                        distance[neighbor] = new_dist       # -> on la modifie, sinon on passe
+
+                    if current_node == start_node :         # si connecté au noeud de départ
+                        next_hope[neighbor] = neighbor      # alors le prochain noeud pour atteindre son voisin est lui même
+                    else :
+                        next_hope[neighbor] = next_hope[current_node]   # sinon on place comme prochain noeud, le prochain noeud du noeud actuel
+                        
+        return next_hope
