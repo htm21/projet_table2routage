@@ -1,7 +1,6 @@
 from Modules.node import *                  # On importe les class des Nœuds créé pour pouvoir les utilisés
 from itertools import combinations
 
-import heapq
 import random as rd                         # On importe le module random pour générer quelque truc aléatoirement
 
 class Network :                             # Création de la class Network
@@ -15,8 +14,8 @@ class Network :                             # Création de la class Network
         self.tier3_nodes : list[Node] = []
 
 
-    def nodes_creation(self) -> None :      # La fonction qui va créer nos Nodes de manère uniforme !!
-        
+    def nodes_creation(self) -> None :      
+        ''' Fonction qui va initialiser l'ensemble de noeuds qui seront utilisés dans notre graphe, et nos fonctions '''
         for _ in range(10) :                # On veut 10 Tier1
             node = Tier1()
             self.nodes.append(node)         # on l'ajoute à la liste des Nodes
@@ -35,15 +34,20 @@ class Network :                             # Création de la class Network
             self.connections[node] = []
             self.tier3_nodes.append(node)
 
+
+    #########################################################################################################################################################
     ######################################## CRÉATION DU GRAPHE NON ORIENTÉ DU RÉSEAU ########################################################################
+    #########################################################################################################################################################
 
 
     def connect_tier_1_nodes(self) -> None:
+        ''' Fonction qui gère les connections des Tier1 '''
+
         possible_connections = int((10 * (10 - 1)) / 2)
         node_combinizations = list(combinations(self.tier1_nodes, 2))
-        connections = [rd.random() < 0.75 for _ in range(possible_connections)]
+        connections = [rd.random() < 0.75 for _ in range(possible_connections)]         # connections possibles T1-T1 avec une probabilité de 75%
 
-        for index, connection in enumerate(connections):
+        for index, connection in enumerate(connections):                             
             if connection:
                 poids = rd.randint(5,10)
                 node_1, node_2 = node_combinizations[index][0], node_combinizations[index][1]
@@ -53,20 +57,22 @@ class Network :                             # Création de la class Network
 
 
     def connect_tier_2_nodes(self) -> None:
-        for node_1 in self.tier2_nodes:
+        ''' Fonction qui gère les connections des Tier2 '''
+
+        for node_1 in self.tier2_nodes:                         # on parcours les Tier2
             
-            backbone_connections = rd.randint(1, 2)
-            while backbone_connections != 0:
-                node_2 = rd.choice(self.tier1_nodes) 
-                if not any([node_2 is connection[0] for connection in self.connections[node_1]]):
-                    poids = rd.randint(10,20) 
-                    self.connections[node_1].append((node_2, poids)); self.connections[node_2].append((node_1, poids))
+            backbone_connections = rd.randint(1, 2)             # on génère un nombre aléatoire de lien possible avec des Tier1 (1 ou 2)
+            while backbone_connections != 0:                    # Tant que d'une connection est possible
+                node_2 = rd.choice(self.tier1_nodes)            # choix aléatoire d'un T1
+                if not any([node_2 is connection[0] for connection in self.connections[node_1]]):   # vérification de lien déjà existant ; si c'est le cas, on relance la procédure
+                    poids = rd.randint(10,20)                   # on genère un poids entre 10 et 2O (poids de lien T2-T2)
+                    self.connections[node_1].append((node_2, poids)); self.connections[node_2].append((node_1, poids))  # on ajoute les liens des deux sens (non-orienté)  
                     
-                    node_1.backbone_connections += 1 ; node_2.backbone_connections += 1
-                    backbone_connections -= 1
+                    node_1.backbone_connections += 1 ; node_2.backbone_connections += 1     # MAJ des connections
+                    backbone_connections -= 1                   # réduction du nombre de connection aux Tier1 possible
 
 
-            transit_opertator_connections = rd.randint(2, 3)
+            transit_opertator_connections = rd.randint(2, 3)    # Même logique pour les liens T2-T2
             while transit_opertator_connections != 0:
                 node_2 = rd.choice(self.tier2_nodes)
                 if not any([node_2 is connection[0] for connection in self.connections[node_1]]) and node_1 is not node_2:
@@ -78,28 +84,33 @@ class Network :                             # Création de la class Network
 
 
     def connect_tier_3_nodes(self) -> None:
-        for node_1 in self.tier3_nodes:
-            opertator_connections = 2
-            while opertator_connections != 0:
-                node_2 = rd.choice(self.tier2_nodes)
-                if not any([node_2 is connection[0] for connection in self.connections[node_1]]):
-                    poids = rd.randint(20, 50) 
-                    self.connections[node_1].append((node_2, poids)); self.connections[node_2].append((node_1, poids))
+        ''' Fonction qui gère les connections des Tier3 '''
+
+        for node_1 in self.tier3_nodes:                 # on parcours les Tier3
+            opertator_connections = 2                   # chaque Tier3 a 2 connections disponibles 
+            while opertator_connections != 0:           # tant qu'on peut connecter
+                node_2 = rd.choice(self.tier2_nodes)    # on choisi des Tier2 aléatoires (Rappel T3 <-> T2 seulement)
+                if not any([node_2 is connection[0] for connection in self.connections[node_1]]):     # on vérifie si le Tier2 n'est pas déjà lié au Tier3
+                    poids = rd.randint(20, 50)                                                        # dans ce cas là -> génération d'un poids aléatoire entre 20 et 50
+                    self.connections[node_1].append((node_2, poids)); self.connections[node_2].append((node_1, poids))  # on ajoute les liens des deux sens (non-orienté)
                     
-                    node_1.transit_opertator_connections += 1 ; node_2.opertator_connections += 1
-                    opertator_connections -= 1
+                    node_1.transit_opertator_connections += 1 ; node_2.opertator_connections += 1     # MAJ des connections 
+                    opertator_connections -= 1          # réduction du nombre de connection aux Tier2 possible
 
 
     def connect_nodes(self) -> None:
-        self.connect_tier_1_nodes()
+        ''' Fonction qui rassemble les création de liens inter-noeuds '''
+
+        self.connect_tier_1_nodes()        
         self.connect_tier_2_nodes()
         self.connect_tier_3_nodes()
-         
-
-
-    ######################################## COMMENT VERIFIER SI UN GRAPH EST CONNEXE ? PARCOURS EN LARGEUR OU PROFONDEUR ########################################################################
-
     
+
+    ##############################################################################################################################################################################
+    ######################################## COMMENT VERIFIER SI UN GRAPH EST CONNEXE ? GRÂCE AUX PARCOURS ########################################################################
+    ##############################################################################################################################################################################
+    
+
     def PP(self, traiter, node) -> None :
         ''' Fonction PP qui va faire le parcours en profondeur du Noeud en entrée en le stockant et de ses voisins'''    
         if node not in traiter :                       
@@ -116,54 +127,19 @@ class Network :                             # Création de la class Network
         return len(traiter) == len(self.nodes)         # on vérifie si la longueur de la liste "traiter" est égale la taille de la liste contenant tout les nodes (self.nodes)
 
 
-    def shortest_weighted_path(self, start_node, end_node):
-        dist = {node : float('inf') for node in self.nodes}
-        dist[start_node] = 0
-        queue = [(start_node, 0)]
+##############################################################################################################################################################################
+####################################################### TABLES DE ROUTAGE ---> NEXT HOP ######################################################################################
+##############################################################################################################################################################################
 
 
-        while queue:
-            
-            # Here we take the node with the smallest distance from our start node       
-            current_node, current_dist = queue.pop(min(enumerate(queue), key = lambda node_distance: node_distance[1][1])[0])
-            
-            if current_dist > dist[current_node]: continue
-            for neighbor_node, weight in self.connections[current_node]:
-                distance = current_dist + weight
-                if distance < dist[neighbor_node]:
-                    dist[neighbor_node] = distance
-                    queue.append((neighbor_node, distance))
-
-        path = []
-        current_node = end_node
-        while current_node != start_node:
-            path.append(current_node)
-            for neighbor_node, weight in self.connections[current_node]:
-                if dist[current_node] == dist[neighbor_node] + weight:
-                    current_node = neighbor_node
-                    break
-        path.append(start_node)
-        path.reverse()
-        return path
-    
-    def calculate_path_weight(self, path : list[Node]):
-        weight = 0
-        for index in range(len(path) - 1):
-            for connection in self.connections[path[index]]:
-                neighbouring_node = connection[0]
-                if neighbouring_node is path[index + 1]:
-                    weight += connection[1]
-        return weight
-
-
-    def next_hope(self, start_node) :
+    def next_hop(self, start_node) :
         ''' Fonction qui forme la table de routage pour le noeud en entrée, utilisation de https://www.youtube.com/watch?v=LGiRB_lByh0&t=1027s '''
         
-        distance = {node : float("inf") for node in self.connections}   # comme dans djikstra, on fixe tout les noeuds à distance "infini" 
-        distance[start_node] = 0                                        # alors que le node de départ "start_node" est nul
+        distance = {node : float("inf") for node in self.connections}           # comme dans djikstra, on fixe tout les noeuds à distance "infini" 
+        distance[start_node] = 0                                                # alors que le node de départ "start_node" est nul
 
-        next_hope = {node : None for node in self.connections}          # de même pour le prochain noeud, ils sont tous nuls au départ
-        next_hope[start_node] = start_node                              # le prochain noeud pour atteindre le noeud de départ est lui même
+        next_hope = {node : None for node in self.connections}                  # de même pour le prochain noeud, ils sont tous nuls au départ
+        next_hope[start_node] = start_node                                      # le prochain noeud pour atteindre le noeud de départ est lui même
         
         unvisited = set(self.connections.keys())
 
@@ -173,14 +149,14 @@ class Network :                             # Création de la class Network
 
             for neighbor, weight in self.connections[current_node] :
                 if neighbor in unvisited :                      
-                    new_dist = distance[current_node] + weight  # on calcul la distance, si elle est meilleure (plus faible) => on mets à jour
+                    new_dist = distance[current_node] + weight                  # on calcul la distance, si elle est meilleure (plus faible) => on mets à jour
 
-                    if new_dist < distance[neighbor] :      # dans djikstra, si la val est inférieur au poids actuelle
-                        distance[neighbor] = new_dist       # -> on la modifie, sinon on passe
+                    if new_dist < distance[neighbor] :                          # dans djikstra, si la val est inférieur au poids actuelle
+                        distance[neighbor] = new_dist                           # -> on la modifie, sinon on passe
 
-                    if current_node == start_node :         # si connecté au noeud de départ
-                        next_hope[neighbor] = neighbor      # alors le prochain noeud pour atteindre son voisin est lui même
+                    if current_node == start_node :                             # si connecté au noeud de départ
+                        next_hope[neighbor] = neighbor                          # alors le prochain noeud pour atteindre son voisin est lui même
                     else :
-                        next_hope[neighbor] = next_hope[current_node]   # sinon on place comme prochain noeud, le prochain noeud du noeud actuel
+                        next_hope[neighbor] = next_hope[current_node]           # sinon on place comme prochain noeud, le prochain noeud du noeud actuel
                         
-        return next_hope
+        return next_hope                                                        # on renvoie la table de routage du start_node
