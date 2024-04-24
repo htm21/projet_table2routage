@@ -3,7 +3,7 @@ from Modules.utils import *
 from Modules.node import *                  # On importe les class des Nœuds créé pour pouvoir les utilisés
 from itertools import combinations
 
-import tkinter as tk
+import heapq
 import random as rd                         # On importe le module random pour générer quelque truc aléatoirement
 
 
@@ -46,16 +46,8 @@ class Network(tk.Canvas):                             # Création de la class Ne
 
     def nodes_creation(self) -> None :      # La fonction qui va créer nos Nodes de manère uniforme !!
         
-        boundries = set_node_boundries(self.winfo_width() // 2, (self.winfo_height() // 2) - 50)
-
-        for _ in range(10) : 
-            x, y = choose_coords(boundries, "Backbone")
-            while self.find_overlapping(x - 45, y - 45, x + 45, y + 45):
-                x, y = choose_coords(boundries, "Backbone")
-
-            canvas_id = self.create_image(x, y, image = self.icons["Backbone"][0], tags = "node")               # On veut 10 Tier1
-            node = Tier1(canvas_id = canvas_id)
-    
+        for _ in range(10) :                # On veut 10 Tier1
+            node = Tier1()
             self.nodes.append(node)         # on l'ajoute à la liste des Nodes
             self.connections[node] = []     # création d'une clé pour pouvoir connaître les connections de chaque Node
             self.tier1_nodes.append(node)
@@ -91,7 +83,10 @@ class Network(tk.Canvas):                             # Création de la class Ne
 
         self.connect_nodes()
 
+
+    #########################################################################################################################################################
     ######################################## CRÉATION DU GRAPHE NON ORIENTÉ DU RÉSEAU ########################################################################
+    #########################################################################################################################################################
 
     def connect_nodes(self) -> None:
         self.connect_tier_1_nodes()
@@ -104,11 +99,13 @@ class Network(tk.Canvas):                             # Création de la class Ne
 
 
     def connect_tier_1_nodes(self) -> None:
+        ''' Fonction qui gère les connections des Tier1 '''
+
         possible_connections = int((10 * (10 - 1)) / 2)
         node_combinizations = list(combinations(self.tier1_nodes, 2))
-        connections = [rd.random() < 0.75 for _ in range(possible_connections)]
+        connections = [rd.random() < 0.75 for _ in range(possible_connections)]         # connections possibles T1-T1 avec une probabilité de 75%
 
-        for index, connection in enumerate(connections):
+        for index, connection in enumerate(connections):                             
             if connection:
                 poids = rd.randint(5, 10)
                 node_1, node_2 = node_combinizations[index][0], node_combinizations[index][1]
@@ -119,20 +116,22 @@ class Network(tk.Canvas):                             # Création de la class Ne
 
 
     def connect_tier_2_nodes(self) -> None:
-        for node_1 in self.tier2_nodes:
+        ''' Fonction qui gère les connections des Tier2 '''
+
+        for node_1 in self.tier2_nodes:                         # on parcours les Tier2
             
             backbone_connections = rd.randint(1, 2)
             while backbone_connections != 0:
                 node_2 = rd.choice(self.tier1_nodes) 
                 if not any([node_2 is connection[0] for connection in self.connections[node_1]]):
-                    poids = rd.randint(10, 20) 
+                    poids = rd.randint(10,20) 
                     self.connections[node_1].append((node_2, poids)); self.connections[node_2].append((node_1, poids))
                     
                     node_1.backbone_connections += 1 ; node_2.backbone_connections += 1
                     backbone_connections -= 1
-                    self.create_line((*self.coords(node_1.canvas_id), *self.coords(node_2.canvas_id)), width = 3, fill = "#1E2422", smooth = True, tags = ["TransitOperator", f"{node_1.name}", f"{node_2.name}"])
 
-            transit_opertator_connections = rd.randint(2, 3)
+
+            transit_opertator_connections = rd.randint(2, 3)    # Même logique pour les liens T2-T2
             while transit_opertator_connections != 0:
                 node_2 = rd.choice(self.tier2_nodes)
                 if not any([node_2 is connection[0] for connection in self.connections[node_1]]) and node_1 is not node_2:
@@ -145,22 +144,31 @@ class Network(tk.Canvas):                             # Création de la class Ne
 
 
     def connect_tier_3_nodes(self) -> None:
-        for node_1 in self.tier3_nodes:
-            opertator_connections = 2
-            while opertator_connections != 0:
-                node_2 = rd.choice(self.tier2_nodes)
-                if not any([node_2 is connection[0] for connection in self.connections[node_1]]):
-                    poids = rd.randint(20, 50) 
-                    self.connections[node_1].append((node_2, poids)); self.connections[node_2].append((node_1, poids))
+        ''' Fonction qui gère les connections des Tier3 '''
+
+        for node_1 in self.tier3_nodes:                 # on parcours les Tier3
+            opertator_connections = 2                   # chaque Tier3 a 2 connections disponibles 
+            while opertator_connections != 0:           # tant qu'on peut connecter
+                node_2 = rd.choice(self.tier2_nodes)    # on choisi des Tier2 aléatoires (Rappel T3 <-> T2 seulement)
+                if not any([node_2 is connection[0] for connection in self.connections[node_1]]):     # on vérifie si le Tier2 n'est pas déjà lié au Tier3
+                    poids = rd.randint(20, 50)                                                        # dans ce cas là -> génération d'un poids aléatoire entre 20 et 50
+                    self.connections[node_1].append((node_2, poids)); self.connections[node_2].append((node_1, poids))  # on ajoute les liens des deux sens (non-orienté)
                     
                     node_1.transit_opertator_connections += 1 ; node_2.opertator_connections += 1
                     opertator_connections -= 1
-                    self.create_line((*self.coords(node_1.canvas_id), *self.coords(node_2.canvas_id)), width = 1, fill = "#232A22", smooth = True, tags = ["Operator", f"{node_1.name}", f"{node_2.name}"])
 
 
-    ######################################## COMMENT VERIFIER SI UN GRAPH EST CONNEXE ? PARCOURS EN LARGEUR OU PROFONDEUR ########################################################################
+    def connect_nodes(self) -> None:
+        self.connect_tier_1_nodes()
+        self.connect_tier_2_nodes()
+        self.connect_tier_3_nodes()
+         
 
+    ##############################################################################################################################################################################
+    ######################################## COMMENT VERIFIER SI UN GRAPH EST CONNEXE ? GRÂCE AUX PARCOURS ########################################################################
+    ##############################################################################################################################################################################
     
+
     def PP(self, traiter, node) -> None :
         ''' Fonction PP qui va faire le parcours en profondeur du Noeud en entrée en le stockant et de ses voisins'''    
         if node not in traiter :                       
@@ -206,8 +214,7 @@ class Network(tk.Canvas):                             # Création de la class Ne
         path.append(start_node)
         path.reverse()
         return path
-
-
+    
     def calculate_path_weight(self, path : list[Node]):
         weight = 0
         for index in range(len(path) - 1):
@@ -216,59 +223,3 @@ class Network(tk.Canvas):                             # Création de la class Ne
                 if neighbouring_node is path[index + 1]:
                     weight += connection[1]
         return weight
-
-
-    def create_routing_tables(self):
-        for main_node in self.nodes:
-            for sub_node in self.nodes:
-                if main_node is not sub_node:
-                    main_node.routing_table[sub_node] = self.shortest_weighted_path(main_node, sub_node)[1]
-
-
-
-
-    # GUI Functions ====================================================================
-
-
-
-    def select_object(self, event):
-        object_ids = self.find_overlapping(event.x, event.y, event.x, event.y) # Finds canvas item closest to cursor      
-        if not object_ids: self.deselect_object(); return
-        if self.selected_node: self.deselect_object()
-        if not "node" in self.gettags(object_ids[-1]): self.deselect_object(); return
-
-        node = self.canvas_id_to_node[object_ids[-1]]
-        self.selected_node = node
-        line_ids = self.find_withtag(node.name)
-        for line_id in line_ids:
-            self.itemconfig(line_id, fill = "#FFCC22")
-
-
-        self.event_generate("<<ObjControls>>")
-        self.itemconfig(node.canvas_id, image = self.icons[node.type][1])
-        self.addtag_withtag("selected", node.canvas_id)
-
-
-    def deselect_object(self) -> None:
-        if self.selected_node:
-            self.itemconfig(self.selected_node.canvas_id, image = self.icons[self.selected_node.type][0])
-        
-            line_ids = self.find_withtag(self.selected_node.name)
-            for line_id in line_ids:
-                if self.selected_node.type == "Backbone":
-                    self.itemconfig(line_id, fill = "#2A2226")
-                elif self.selected_node.type == "TransitOperator":
-                    self.itemconfig(line_id, fill = "#1E2422")
-                elif self.selected_node.type == "Operator":
-                    self.itemconfig(line_id, fill = "#232A22")
-        
-        self.selected_node = None
-        self.event_generate("<<ObjControls>>")
-        self.dtag("selected")
-
-
-    def passdown_func(self, arg) -> None:
-        if arg == "create_network":
-            self.app.info_panel.pack(side = "top", fill = "x")
-            self.create_network_button.place_forget()
-            self.nodes_creation()
