@@ -11,7 +11,7 @@ app_folder_path = os.getcwd().replace("\\", "/")
 font = "Montserrat" if platform.system() == "Windows" else "Arial"
 
 
-NODE_TYPE : dict[str : Node] = {
+NODE_TYPE : dict[str : Node] = {                                                # Dictionnaire qui relie chaque type (string) à leur class respective
     "Tier1" : Tier1,
     "Tier2" : Tier2,
     "Tier3" : Tier3,
@@ -29,10 +29,12 @@ ALERTS = {
     }
 
 def screen_dimensions(root : tk.Tk) -> tuple[int, int]:
-    return root.winfo_screenwidth(), root.winfo_screenheight()
+    ''' Fonction qui retourne les dimensions de l'interface graphique '''
+    return root.winfo_screenwidth(), root.winfo_screenheight()                  # respectivement largeur, hauteur
 
 
 def load_to_size(icon : str, width : int, height : int) -> ImageTk.PhotoImage:
+    ''' Fonction qui permet l'importation des icones (du dossier Icons) dans l'interface graphiques '''
     icon = Image.open(f"{app_folder_path}/Icons/{icon}.png")
     icon = icon.resize((width, height))
 

@@ -9,21 +9,21 @@ from Modules.app import App
 
 def main() -> None:
 
-    # Ignores Windows Screen Scaling so the GUI widgets don't look blown out on screen
-    # This is mostly for any widgets that contain text
+    # Ignore la mise à l'échelle de l'écran des machines Windows pour que les widgets de l'interface graphique n'apparaissent pas trop gros à l'écran.
+    # C'est surtout pour les widgets qui contiennent du texte.
     if platform.system() == "Windows":
         ctypes.windll.shcore.SetProcessDpiAwareness(0)
 
 
-    # Here we initialize the tkinter window and pass it onto the App class where it will be managed 
+    # Ici, nous initialisons la fenêtre tkinter (interface graphique) et la passons en entrée d'une instance de la classe App où elle sera gérée. 
     root = tk.Tk()
     app  = App(root)
 
 
-    # app.Running is set to "True" at start and will stop all GUI & Logic updates and functions when set to "False"
+    # app.Running est défini à "True" au démarrage et arrêtera toutes les mises à jour et fonctions de l'interface graphique et de la logique s'il est défini à "False".
     while app.Running:
 
-        # try-else statement to catch any bugs
+        # la déclaration try-else permet de détecter les éventuels bugs :)
         try:  
             if app.alert_lable.winfo_ismapped():
                 if (time() - app.alert_create_time) > app.alert_on_screen_time:
@@ -31,13 +31,13 @@ def main() -> None:
         except: 
             pass
         
-        # Use of update instead of mainloop to not get stuck in a loop
+        # Utilisation de update au lieu de mainloop pour ne pas rester bloqué dans une boucle
         root.update()
 
 
 
 if __name__ == "__main__" :
-    # Clear Terminal at Start (for debug)
+    # On nettoie le terminal au démarrage
     print("\033c")
     main()
 
