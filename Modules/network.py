@@ -120,7 +120,9 @@ class Network(tk.Canvas):                             # Création de la class Ne
     #########################################################################################################################################################
 
     def connect_nodes(self) -> None:
-        ''' Fonction qui créer le graphe non orienté contenant les 3 types de Tier, avec des liens pondérés '''
+        ''' 
+        Fonction qui créer le graphe non orienté contenant les 3 types de Tier, avec des liens pondérés 
+        '''
         self.connect_tier_1_nodes()                         # création des liens des T1                                                   
         self.connect_tier_2_nodes()                         # création des liens des T2
         self.connect_tier_3_nodes()                         # création des liens des T3
@@ -131,7 +133,9 @@ class Network(tk.Canvas):                             # Création de la class Ne
 
 
     def connect_tier_1_nodes(self) -> None:
-        ''' Fonction qui gère les connections des Tier1 '''
+        ''' 
+        Fonction qui gère les connections des Tier1 
+        '''
         possible_connections = int((10 * (10 - 1)) / 2)
         node_combinizations = list(combinations(self.tier1_nodes, 2))
         connections = [rd.random() < 0.75 for _ in range(possible_connections)]         # connections possibles T1-T1 avec une probabilité de 75%
@@ -149,7 +153,9 @@ class Network(tk.Canvas):                             # Création de la class Ne
 
 
     def connect_tier_2_nodes(self) -> None:
-        ''' Fonction qui gère les connections des Tier2 '''
+        ''' 
+        Fonction qui gère les connections des Tier2 
+        '''
 
         for node_1 in self.tier2_nodes:                         # on parcours les Tier2
             
@@ -178,7 +184,9 @@ class Network(tk.Canvas):                             # Création de la class Ne
 
 
     def connect_tier_3_nodes(self) -> None:
-        ''' Fonction qui gère les connections des Tier3 '''
+        ''' 
+        Fonction qui gère les connections des Tier3 
+        '''
 
         for node_1 in self.tier3_nodes:                 # on parcours les Tier3
             opertator_connections = 2                   # chaque Tier3 a 2 connections disponibles 
@@ -200,14 +208,18 @@ class Network(tk.Canvas):                             # Création de la class Ne
     
 
     def PP(self, traiter, node) -> None :
-        ''' Fonction PP qui va faire le parcours en profondeur du Noeud en entrée et de ses voisins en les stockant '''    
+        ''' 
+        Fonction PP qui va faire le parcours en profondeur du Noeud en entrée et de ses voisins en les stockant 
+        '''    
         if node not in traiter :                       
             traiter.append(node)                       # si le Noeud n'est pas dans la liste traiter alors on l'ajoute
             for connection in self.connections[node] : # on regard ses connections
                 self.PP(traiter, connection[0])        # et on effectue à leur tour un parcours en profondeur
     
     def main_dfs(self) -> bool :
-        ''' Fonction main du parcours en largeur, elle va créer la liste qui contiendra tout les noeuds atteint '''
+        ''' 
+        Fonction main du parcours en largeur, elle va créer la liste qui contiendra tout les noeuds atteint 
+        '''
         traiter = []                                   # inventaire des noeuds "marquer"
         depart = self.nodes[rd.randint(1,100)]         # il nous faut une racine pour démarer (on prend aléatoirement)
         self.PP(traiter, depart)                       # on lance la fonction PP récursive
@@ -221,7 +233,9 @@ class Network(tk.Canvas):                             # Création de la class Ne
 
 
     def next_hop(self, start_node) -> dict[Node : Node]:
-        ''' Fonction qui forme la table de routage pour le noeud en entrée, utilisation de https://www.youtube.com/watch?v=LGiRB_lByh0&t=1027s '''
+        ''' 
+        Fonction qui forme la table de routage pour le noeud en entrée, utilisation de https://www.youtube.com/watch?v=LGiRB_lByh0&t=1027s 
+        '''
         
         distance = {node : float("inf") for node in self.connections}           # comme dans djikstra, on fixe tout les noeuds à distance "infini" 
         distance[start_node] = 0                                                # alors que le node de départ "start_node" est nul
@@ -251,8 +265,10 @@ class Network(tk.Canvas):                             # Création de la class Ne
 
 
     def reconstruct_path(self, start : Node, end : Node) -> list[Node]: 
-
-        path, node, pointer = [start], start, end
+        '''
+        Fonction qui retourne le plus court chemin entre deux nœuds
+        '''
+        path, node, pointer = [start], start, end                               # on initialise le chemin au nœud de départ, le nœud actuel et le pointeur qui représente le nœud
 
         while node is not end:
             print(f"Next node {node.routing_table[pointer]}")
@@ -267,6 +283,9 @@ class Network(tk.Canvas):                             # Création de la class Ne
 
 
     def select_object(self, event : tk.Event):
+        '''
+        Fonction qui gère les interactions utilisateur - interface graphique 
+        '''
         object_ids = self.find_overlapping(event.x, event.y, event.x, event.y) # Finds canvas item closest to cursor      
         
         if not object_ids: 
@@ -353,5 +372,3 @@ class Network(tk.Canvas):                             # Création de la class Ne
         
         elif arg == "generate_network":
             pass
-
-
