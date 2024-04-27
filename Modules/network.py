@@ -121,9 +121,9 @@ class Network(tk.Canvas):                             # Création de la class Ne
 
     def connect_nodes(self) -> None:
         ''' Fonction qui créer le graphe non orienté contenant les 3 types de Tier, avec des liens pondérés '''
-        self.connect_tier_1_nodes()                                                             
-        self.connect_tier_2_nodes()
-        self.connect_tier_3_nodes()
+        self.connect_tier_1_nodes()                         # création des liens des T1                                                   
+        self.connect_tier_2_nodes()                         # création des liens des T2
+        self.connect_tier_3_nodes()                         # création des liens des T3
 
         self.tag_raise("TransitOperator")
         self.tag_raise("Backbone")

@@ -67,9 +67,15 @@ class App(object):
 
 
     def on_closing(self, *args) -> None:
+        '''
+        Fonction qui va stopper l'éxécution du programme en fermant l'application 
+        '''
         self.Running = False
 
     def create_alert(self, *args) -> None:
+        '''
+        Fonction qui va créer des alertes visuels
+        '''
         text = " " + ALERTS[self.alert[0]][self.alert[1]]
         color = "#4d0000" if self.alert[0] == "Error" else "#004d00"
 

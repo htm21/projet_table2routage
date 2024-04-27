@@ -29,12 +29,16 @@ ALERTS = {
     }
 
 def screen_dimensions(root : tk.Tk) -> tuple[int, int]:
-    ''' Fonction qui retourne les dimensions de l'interface graphique '''
+    ''' 
+    Fonction qui retourne les dimensions de l'interface graphique 
+    '''
     return root.winfo_screenwidth(), root.winfo_screenheight()                  # respectivement largeur, hauteur
 
 
 def load_to_size(icon : str, width : int, height : int) -> ImageTk.PhotoImage:
-    ''' Fonction qui permet l'importation des icones (du dossier Icons) dans l'interface graphiques '''
+    ''' 
+    Fonction qui permet l'importation des icones (du dossier Icons) dans l'interface graphiques 
+    '''
     icon = Image.open(f"{app_folder_path}/Icons/{icon}.png")
     icon = icon.resize((width, height))
 
@@ -42,6 +46,9 @@ def load_to_size(icon : str, width : int, height : int) -> ImageTk.PhotoImage:
 
 
 def set_node_boundries(c_width, c_height) -> None:
+    '''
+    Fonction qui gère les limites physique de chaque type de Nœud dans l'interface graphique
+    '''
     boundries = {
         "Backbone" : {"width" : None, "height" : None}, # 30% screen from center
         "TransitOperator" : {"width" : None, "height" : None}, # 20% screen form "Backbone" min width & height
@@ -73,11 +80,13 @@ def set_node_boundries(c_width, c_height) -> None:
 
 
 def choose_coords(boundries : dict, specific : str) -> tuple:
-    
+    '''
+    Fonction qui va générer des coordonnées aléatoire dans l'interface graphique que vont prendre les Nœuds lors de la création du Réseau 
+    '''
     x, y = randint(*boundries[specific]["width"]), randint(*boundries[specific]["height"])
     valid = False
     
-    if specific == "TransitOperator":
+    if specific == "TransitOperator":           # s'il s'agit d'un Tier2
 
         while not valid:
             if x > boundries["Backbone"]["width"][0] and x < boundries["Backbone"]["width"][1] and y < boundries["Backbone"]["height"][0] or y > boundries["Backbone"]["height"][1]:
@@ -88,7 +97,7 @@ def choose_coords(boundries : dict, specific : str) -> tuple:
                 x = randint(*boundries["TransitOperator"]["width"])
                 y = randint(*boundries["TransitOperator"]["height"])
 
-    elif specific == "Operator":
+    elif specific == "Operator":                # s'il s'agit d'un Tier1
         while not valid:
             if x > boundries["TransitOperator"]["width"][0] and x < boundries["TransitOperator"]["width"][1] and y < boundries["TransitOperator"]["height"][0] or y > boundries["TransitOperator"]["height"][1]:
                 valid = True
