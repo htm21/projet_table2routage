@@ -24,6 +24,9 @@ class Network(tk.Canvas):                             # Création de la class Ne
             "Backbone" : (load_to_size("backbone_node", 80, 80), load_to_size("highlight_backbone_node", 80, 80)),
             "TransitOperator" : (load_to_size("transit_operator_node", 60, 60), load_to_size("highlight_transit_operator_node", 60, 60)),
             "Operator" : (load_to_size("operator_node", 30, 30), load_to_size("highlight_operator_node", 30, 30)),
+            "Connectivity" : (load_to_size("connectivity", 65, 65), load_to_size("highlight_connectivity", 65, 65)),
+            "Path" : (load_to_size("path", 65, 65), load_to_size("highlight_path", 65, 65)),
+            "NewNetwork" : (load_to_size("network", 65, 65), load_to_size("highlight_network", 65, 65)),
             }
 
         self.selected_node : Node = None
@@ -31,11 +34,23 @@ class Network(tk.Canvas):                             # Création de la class Ne
 
         self.create_network_button = CustomButton(parent = self, parent_obj = self, func_arg = "create_network", icons = self.icons["Network"], image = self.icons["Network"][0], compound = "top", text = "Create\nNetwork", justify = "center", font = f"{font} 28 bold", foreground = "#FFFFFF", background = self.kwargs["background"])
         self.create_network_button.place(anchor = "center", relx = 0.5, rely = 0.5)
-        
 
+        self.network_tools = tk.Frame(self, background = "#22282a")
+        self.buffer_frame_1 = tk.Frame(self.network_tools, background = "#1D2123", height = 5)
+        self.buffer_frame_2 = tk.Frame(self.network_tools, background = "#1D2123", width = 5)
+        self.find_path_button = CustomButton(parent = self.network_tools, parent_obj = self, func_arg = "find_path", icons = self.icons["Path"], image = self.icons["Path"][0], background = "#22282a")
+        self.connectivity_button = CustomButton(parent = self.network_tools, parent_obj = self, func_arg = "check_connectivity", icons = self.icons["Connectivity"], image = self.icons["Connectivity"][0], background = "#22282a")
+        self.generate_network = CustomButton(parent = self.network_tools, parent_obj = self, func_arg = "generate_network", icons = self.icons["NewNetwork"], image = self.icons["NewNetwork"][0], background = "#22282a")
+
+        self.buffer_frame_1.pack(side = "top", fill = "x")
+        self.buffer_frame_2.pack(side = "left", fill = "y")
+        self.generate_network.pack(side = "right", padx = 15, pady = 15)
+        self.connectivity_button.pack(side = "right", padx = 15, pady = 15)
+        self.find_path_button.pack(side = "right", padx = 15, pady = 15)
+        
         # Logic Stuff ==================================================================
 
-        self.connections : dict[Node : list] = {}               # un Network contient des connections entre Nodes (c.f Association des Nodes)
+        self.connections : dict[Node : list[Node]] = {}               # un Network contient des connections entre Nodes (c.f Association des Nodes)
         self.nodes : list[Node] = []              # un Network contient aussi une liste de Nodes (ça serait bête sinon)
         
         self.tier1_nodes : list[Node] = []
@@ -123,8 +138,10 @@ class Network(tk.Canvas):                             # Création de la class Ne
                 node_1, node_2 = node_combinizations[index][0], node_combinizations[index][1]
                 self.connections[node_1].append((node_2, poids)); self.connections[node_2].append((node_1, poids))
                 
-                node_1.backbone_connections += 1 ; node_2.backbone_connections += 1
                 self.create_line((*self.coords(node_1.canvas_id), *self.coords(node_2.canvas_id)), width = 5, fill = "#2A2226", smooth = True, tags = ["Backbone", f"{node_1.name}", f"{node_2.name}"])
+
+        for node in self.tier1_nodes:
+            node.backbone_connections += len(self.connections[node])
 
 
     def connect_tier_2_nodes(self) -> None:
@@ -141,6 +158,7 @@ class Network(tk.Canvas):                             # Création de la class Ne
                     
                     node_1.backbone_connections += 1 ; node_2.backbone_connections += 1
                     backbone_connections -= 1
+                    node_2.transit_opertator_connections += 1
                     self.create_line((*self.coords(node_1.canvas_id), *self.coords(node_2.canvas_id)), width = 3, fill = "#1E2422", smooth = True, tags = ["TransitOperator", f"{node_1.name}", f"{node_2.name}"])
 
             transit_opertator_connections = rd.randint(2, 3)    # Même logique pour les liens T2-T2
@@ -201,7 +219,7 @@ class Network(tk.Canvas):                             # Création de la class Ne
 ##############################################################################################################################################################################
 
 
-    def next_hop(self, start_node) :
+    def next_hop(self, start_node) -> dict[Node : Node]:
         ''' Fonction qui forme la table de routage pour le noeud en entrée, utilisation de https://www.youtube.com/watch?v=LGiRB_lByh0&t=1027s '''
         
         distance = {node : float("inf") for node in self.connections}           # comme dans djikstra, on fixe tout les noeuds à distance "infini" 
@@ -231,25 +249,44 @@ class Network(tk.Canvas):                             # Création de la class Ne
         return next_hope                                                        # on renvoie la table de routage du start_node
 
 
+    def reconstruct_path(start : Node, end : Node) -> list[Node]: 
+
+        path, node, pointer = [start], start, end
+
+        while node != end:
+            node = node.routing_table[pointer]
+            path.append(node)
+        
+        return path
+
+
     # GUI Functions ====================================================================
 
 
 
-    def select_object(self, event):
+    def select_object(self, event : tk.Event):
         object_ids = self.find_overlapping(event.x, event.y, event.x, event.y) # Finds canvas item closest to cursor      
-        if not object_ids: self.deselect_object(); return
-        if self.selected_node: self.deselect_object()
-        if not "node" in self.gettags(object_ids[-1]): self.deselect_object(); return
+        
+        if not object_ids: 
+            self.deselect_object()
+            self.app.info_panel.set_object_info(self)
+            return
+        
+        if self.selected_node: 
+            self.deselect_object()
+        
+        if not "node" in self.gettags(object_ids[-1]): 
+            self.deselect_object()
+            self.app.info_panel.set_object_info(self)
+            return
 
         node = self.canvas_id_to_node[object_ids[-1]]
         self.selected_node = node
-        print(node.routing_table)
+        self.app.info_panel.set_object_info(node)
         line_ids = self.find_withtag(node.name)
         for line_id in line_ids:
             self.itemconfig(line_id, fill = "#FFCC22")
 
-
-        self.event_generate("<<ObjControls>>")
         self.itemconfig(node.canvas_id, image = self.icons[node.type][1])
         self.addtag_withtag("selected", node.canvas_id)
 
@@ -268,19 +305,19 @@ class Network(tk.Canvas):                             # Création de la class Ne
                     self.itemconfig(line_id, fill = "#232A22")
         
         self.selected_node = None
-        self.event_generate("<<ObjControls>>")
+
         self.dtag("selected")
 
 
-    def passdown_func(self, arg) -> None:
+    def passdown_func(self, arg : str) -> None:
         if arg == "create_network":
-            self.app.info_panel.pack(side = "top", fill = "x")
             self.create_network_button.place_forget()
-            
-            print("creating nodes")
+            self.app.info_panel.pack(side = "top", fill = "x")
+            self.network_tools.place(anchor = "se", relx = 1, rely = 1)
+ 
             self.nodes_creation()
-            print("creating connections")
             self.connect_nodes()
-            print("creating routing tables")
             for node in self.nodes:
                 node.routing_table = self.next_hop(node)
+            
+            self.app.info_panel.set_object_info(self)

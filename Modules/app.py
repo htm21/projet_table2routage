@@ -43,6 +43,7 @@ class App(object):
         self.parent.geometry(f"{self.gui_w}x{self.gui_h}+{self.x}+{self.y}")      
         self.parent.title("Project Table Routage")
         self.parent.resizable(False, False)
+        self.parent.update()
 
         # Frames =======================================================================
 
