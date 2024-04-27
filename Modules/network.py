@@ -61,14 +61,18 @@ class Network(tk.Canvas):                             # Création de la class Ne
 
     def nodes_creation(self) -> None :      # La fonction qui va créer nos Nodes de manère uniforme !!
         ''' Fonction qui va initialiser nos Tier de manière uniforme, en initialisant également leur liste de connections, etc. '''
+        
         boundries = set_node_boundries(self.winfo_width() // 2, (self.winfo_height() // 2) - 50)
+        bb_ovrlp = 45 if platform.system() == "Windows" else 25
+        top_ovrlp = 35 if platform.system() == "Windows" else 15
+        op_ovrlp = 20 if platform.system() == "Windows" else 10
 
         for _ in range(10) :                                # On veut 10 Tier1
             x, y = choose_coords(boundries, "Backbone")
-            overlap = self.find_overlapping(x - 45, y - 45, x + 45, y + 45)
+            overlap = self.find_overlapping(x - bb_ovrlp, y - bb_ovrlp, x + bb_ovrlp, y + bb_ovrlp)
             while overlap:
                 x, y = choose_coords(boundries, "Backbone")
-                overlap = self.find_overlapping(x - 45, y - 45, x + 45, y + 45)
+                overlap = self.find_overlapping(x - bb_ovrlp, y - bb_ovrlp, x + bb_ovrlp, y + bb_ovrlp)
 
             canvas_id = self.create_image(x, y, image = self.icons["Backbone"][0], tags = "node")          
             node = Tier1(canvas_id = canvas_id)             # initialisation du Node
@@ -81,10 +85,10 @@ class Network(tk.Canvas):                             # Création de la class Ne
 
         for _ in range(20) :                                # On veut 20 Tier2
             x, y = choose_coords(boundries, "TransitOperator")
-            overlap = self.find_overlapping(x - 35, y - 35, x + 35, y + 35)
+            overlap = self.find_overlapping(x - top_ovrlp, y - top_ovrlp, x + top_ovrlp, y + top_ovrlp)
             while overlap:
                 x, y = choose_coords(boundries, "TransitOperator")
-                overlap = self.find_overlapping(x - 35, y - 35, x + 35, y + 35)
+                overlap = self.find_overlapping(x - top_ovrlp, y - top_ovrlp, x + top_ovrlp, y + top_ovrlp)
 
             canvas_id = self.create_image(x, y, image = self.icons["TransitOperator"][0], tags = "node")
             node = Tier2(canvas_id = canvas_id)             # initialisation du Node
@@ -97,10 +101,10 @@ class Network(tk.Canvas):                             # Création de la class Ne
 
         for _ in range(70) :                                # On veut 70 Tier3
             x, y = choose_coords(boundries, "Operator")
-            overlap = self.find_overlapping(x - 20, y - 20, x + 20, y + 20)
+            overlap = self.find_overlapping(x - op_ovrlp, y - op_ovrlp, x + op_ovrlp, y + op_ovrlp)
             while overlap:
                 x, y = choose_coords(boundries, "Operator")
-                overlap = self.find_overlapping(x - 20, y - 20, x + 20, y + 20)
+                overlap = self.find_overlapping(x - op_ovrlp, y - op_ovrlp, x + op_ovrlp, y + op_ovrlp)
             
             canvas_id = self.create_image(x, y, image = self.icons["Operator"][0], tags = "node")
             node = Tier3(canvas_id = canvas_id)             # initialisation du Node
