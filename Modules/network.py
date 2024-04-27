@@ -250,11 +250,12 @@ class Network(tk.Canvas):                             # Création de la class Ne
         return next_hope                                                        # on renvoie la table de routage du start_node
 
 
-    def reconstruct_path(start : Node, end : Node) -> list[Node]: 
+    def reconstruct_path(self, start : Node, end : Node) -> list[Node]: 
 
         path, node, pointer = [start], start, end
 
-        while node != end:
+        while node is not end:
+            print(f"Next node {node.routing_table[pointer]}")
             node = node.routing_table[pointer]
             path.append(node)
         
@@ -306,8 +307,26 @@ class Network(tk.Canvas):                             # Création de la class Ne
                     self.itemconfig(line_id, fill = "#232A22")
         
         self.selected_node = None
-
         self.dtag("selected")
+
+
+    def select_path_nodes(self) -> None:
+        '''
+        Fonction qui permet à l'utilisateur de créer une connexion entre deux Nodes du Network (précédemment créer)
+        '''
+        self.deselect_object()
+        
+        self.config(highlightbackground = "#ffcc22", highlightthickness = 5) 
+        nodes = []
+
+        while len(nodes) < 2:                                                   # tant qu'on a deux nodes dans le network, les connexions sont possibles
+            if self.selected_node:
+                nodes.append(self.selected_node)
+                self.deselect_object()
+            self.app.parent.update()
+
+        self.config(highlightthickness = 0)
+        return nodes
 
 
     def passdown_func(self, arg : str) -> None:
@@ -322,3 +341,17 @@ class Network(tk.Canvas):                             # Création de la class Ne
                 node.routing_table = self.next_hop(node)
             
             self.app.info_panel.set_object_info(self)
+        
+        elif arg == "find_path":
+            nodes = self.select_path_nodes()
+            print(f"Is connexe : {self.main_dfs()}")
+            print(f"Selected Nodes : {nodes}")
+            print(f"Path to take : {self.reconstruct_path(*nodes)}")
+        
+        elif arg == "check_connectivity":
+            pass
+        
+        elif arg == "generate_network":
+            pass
+
+

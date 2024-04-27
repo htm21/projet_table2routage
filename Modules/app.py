@@ -41,8 +41,8 @@ class App(object):
         # Window Settings ==============================================================
 
         self.parent.geometry(f"{self.gui_w}x{self.gui_h}+{self.x}+{self.y}")      
+        self.parent.minsize(1600, 900)
         self.parent.title("Project Table Routage")
-        self.parent.resizable(True, True)
         self.parent.update()
 
         # Frames =======================================================================
@@ -53,7 +53,7 @@ class App(object):
         self.info_panel = Panel(self.MAIN_FRAME, app = self, background = "#22282a", height = 125)
         self.info_panel.pack_propagate(0)
 
-        self.network = Network(self.MAIN_FRAME, app = self, border = 0, highlightthickness = 0, background = "#171a1c")
+        self.network = Network(self.MAIN_FRAME, app = self, border = 0, highlightthickness = 0, background = "#171a1c", highlightbackground = "#ffcc22")
         self.network.pack(side = "bottom", fill = "both", expand = True)
 
         # Widgets ======================================================================
