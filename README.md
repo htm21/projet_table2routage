@@ -9,33 +9,36 @@ Ahmad HATOUM (22202060) - Francesco DI GENNARO (22205989)
 
 ## Installation
 
-L'installation des différents modules sont fait par l'utlisation de  [pip](https://pip.pypa.io/en/stable/)  dans le terminal :
+L'installation des différents modules est faite par l'utilisation de [pip](https://pip.pypa.io/en/stable/)  dans le terminal :
 ```bash
 pip install module
 ```
-Les modules nécessaires sont les suivants : ...
+Les modules nécessaires sont les suivants : tkinter, ctypes, platform, pyglet, itertools, os, pillow
 
 
 # Les Objectifs du projet
 
-Le but du projet est de réaliser une application qui permette principalement d’établir la table de routage de chaque noeud d’un réseau de 100 noeuds. Dans ce réseau, différents types de nœuds sont présents : Tier1, Tier2, Tier3 avec une liasion bien précise entre chacun. 
+Le but du projet est de réaliser une application qui permette principalement d’établir la table de routage de chaque nœud d’un réseau de 100 nœuds. Dans ce réseau, différents types de nœuds sont présents : Tier1 (les Backbones), Tier2 (les TransitOperator), Tier3 (les Operators) avec une liaison bien précise entre eux. 
+
 
 # Les Différentes Étapes de notre projet
 
 - Création des class permettant la modélisation des Nœuds du réseau, comprennant les Tier1, Tier2, Tier3.
 - Création de liens entre chaque type niveau des opérateurs, et donc d'un Graphe.
-- Mise en place d'une vérification de la connexité du Graphe : avec l'implémentation d'un parcours en profondeur. 
+- Mise en place d'une vérification de la connexité du Graphe : avec l'implémentation du parcours en profondeur. 
 - La détermination des tables de routage des 100 nœuds présents dans le réseau.
 - Reconstitution du plus court chemin entre 2 nœuds.
+- Implémentation du code dans une interface graphique (tkinter)
 
 
-# Comprendre la structure du projet ?
+
+# Comment comprendre la structure du projet ?
 
 **Dossier "Modules"**  
-Ce dossier contient tout les sous fichiers permettant le fonctionnement du code, les différentes fichiers sont importés dans d'autres pour permettre l'utilisation de leurs code.  
+Ce dossier contient tous les sous-fichiers permettant le fonctionnement du code, les différents fichiers sont importés dans d'autres pour permettre l'utilisation de leurs codes.  
 
 **Fichier main.py**  
-Ce fichier permet l'éxécution du code, il rassemble le tout simplement.
+Ce fichier permet l'exécution de l'application, il rassemble le tout, simplement.
 
 
 # ANNEXE
