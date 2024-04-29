@@ -160,23 +160,22 @@ class Network(tk.Canvas):                             # Création de la class Ne
                     poids = rd.randint(10, 20)                                                                          # génère un poids entre 10 et 20 (car implique un Tier2)
                     self.connections[node_1].append((node_2, poids)); self.connections[node_2].append((node_1, poids))  # on ajoute la connections dans les deux nœuds     
                     
-                    node_1.backbone_connections += 1 ; node_2.backbone_connections += 1                                 # MAJ des compteurs de connections de Tier
                     backbone_connections -= 1
-                    node_2.transit_opertator_connections += 1
+                    node_1.backbone_connections += 1; node_2.transit_opertator_connections += 1
                     self.create_line((*self.coords(node_1.canvas_id), *self.coords(node_2.canvas_id)), width = 3, fill = "#1E2422", smooth = True, tags = ["TransitOperator", f"{node_1.name}", f"{node_2.name}"])
-
-            transit_opertator_connections = rd.randint(2, 3)    # Même logique pour les liens T2-T2
-            while transit_opertator_connections != 0:
+            
+            transit_opertator_connections = rd.randint(2, 3) - node_1.transit_opertator_connections   # Même logique pour les liens T2-T2
+            while transit_opertator_connections > 0:
                 node_2 = rd.choice(self.tier2_nodes)            # on choisi un Tier2 aléatoirement 
-                if not any([node_2 is connection[0] for connection in self.connections[node_1]]) and node_1 is not node_2:  # Même logique
+                if not any([node_2 is connection[0] for connection in self.connections[node_1]]) and node_1 is not node_2 and node_2.transit_opertator_connections <= 2:  # Même logique
                     poids = rd.randint(10, 20)                                                                              # ...
                     self.connections[node_1].append((node_2, poids)); self.connections[node_2].append((node_1, poids))      
                     
-                    node_1.transit_opertator_connections += 1 ; node_2.transit_opertator_connections += 1
                     transit_opertator_connections -= 1
+                    node_1.transit_opertator_connections += 1; node_2.transit_opertator_connections += 1
                     self.create_line((*self.coords(node_1.canvas_id), *self.coords(node_2.canvas_id)), width = 3, fill = "#1E2422", smooth = True, tags = ["TransitOperator", f"{node_1.name}", f"{node_2.name}"])
 
-
+    
     def connect_tier_3_nodes(self) -> None:
         ''' Fonction qui gère les connections des Tier3 '''
 
@@ -187,11 +186,10 @@ class Network(tk.Canvas):                             # Création de la class Ne
                 if not any([node_2 is connection[0] for connection in self.connections[node_1]]):     # on vérifie si le Tier2 n'est pas déjà lié au Tier3
                     poids = rd.randint(20, 50)                                                        # dans ce cas là -> génération d'un poids aléatoire entre 20 et 50
                     self.connections[node_1].append((node_2, poids)); self.connections[node_2].append((node_1, poids))  # on ajoute les liens des deux sens (non-orienté)
-                    
-                    node_1.transit_opertator_connections += 1 ; node_2.opertator_connections += 1
-                    opertator_connections -= 1
-                    self.create_line((*self.coords(node_1.canvas_id), *self.coords(node_2.canvas_id)), width = 1, fill = "#232A22", smooth = True, tags = ["Operator", f"{node_1.name}", f"{node_2.name}"])
 
+                    opertator_connections -= 1
+                    node_1.transit_opertator_connections += 1; node_2.opertator_connections += 1
+                    self.create_line((*self.coords(node_1.canvas_id), *self.coords(node_2.canvas_id)), width = 1, fill = "#232A22", smooth = True, tags = ["Operator", f"{node_1.name}", f"{node_2.name}"])
 
 
 ##############################################################################################################################################################################
@@ -248,6 +246,50 @@ class Network(tk.Canvas):                             # Création de la class Ne
                         next_hope[neighbor] = next_hope[current_node]           # sinon on place comme prochain noeud, le prochain noeud du noeud actuel
                         
         return next_hope                                                        # on renvoie la table de routage du start_node
+
+
+    def shortest_weighted_path(self, start_node, end_node) -> list[Node]:
+        dist = {node : float('inf') for node in self.nodes}
+        dist[start_node] = 0
+        queue = [(start_node, 0)]
+
+
+        while queue:
+
+            # Here we take the node with the smallest distance from our start node       
+            current_node, current_dist = queue.pop(min(enumerate(queue), key = lambda node_distance: node_distance[1][1])[0])
+
+            if current_dist > dist[current_node]: continue
+            for neighbor_node, weight in self.connections[current_node]:
+                distance = current_dist + weight
+                if distance < dist[neighbor_node]:
+                    dist[neighbor_node] = distance
+                    queue.append((neighbor_node, distance))
+
+        path = []
+        current_node = end_node
+        while current_node != start_node:
+            path.append(current_node)
+            for neighbor_node, weight in self.connections[current_node]:
+                if dist[current_node] == dist[neighbor_node] + weight:
+                    current_node = neighbor_node
+                    break
+        path.append(start_node); path.reverse()
+        return path
+    
+    
+    def create_routing_tables(self):
+        for start_node in self.nodes:
+            index = 0
+            while len(start_node.routing_table) != len(self.nodes) - 1:
+                end_node : Node = self.nodes[index]
+                
+                if not start_node.routing_table.get(end_node):
+                    path = self.shortest_weighted_path(start_node, end_node)
+                    for index_node in range(len(path) - 1):
+                        sub_node : Node = path[index_node]
+                        sub_node.routing_table[end_node] = path[index_node + 1]
+                index += 1
 
 
     def reconstruct_path(self, start : Node, end : Node) -> list[Node]: 
@@ -337,9 +379,9 @@ class Network(tk.Canvas):                             # Création de la class Ne
  
             self.nodes_creation()
             self.connect_nodes()
-            for node in self.nodes:
-                node.routing_table = self.next_hop(node)
-            
+            print("creating routing tables")
+            self.create_routing_tables()
+
             self.app.info_panel.set_object_info(self)
         
         elif arg == "find_path":
