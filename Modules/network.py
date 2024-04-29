@@ -263,47 +263,76 @@ class Network(tk.Canvas):                             # Création de la class Ne
 
 
     def shortest_weighted_path(self, start_node, end_node) -> list[Node]:
-        dist = {node : float('inf') for node in self.nodes}
-        dist[start_node] = 0
-        queue = [(start_node, 0)]
+        '''
+        Fonction qui retourne le plus court chemin entre deux nœuds choisis 
+        '''
+
+        # Initialisation de la table des distances avec infini pour tous les nœuds sauf le nœud de départ
+        dist = {node : float('inf') for node in self.nodes}      
+        dist[start_node] = 0      
+        
+        # Création d'une file de priorité contenant le nœud de départ et sa distance (initialement 0)
+        queue = [(start_node, 0)]                            
 
 
         while queue:
 
-            # Here we take the node with the smallest distance from our start node       
+            # Sélection et suppression du nœud ayant la distance minimale dans la file       
             current_node, current_dist = queue.pop(min(enumerate(queue), key = lambda node_distance: node_distance[1][1])[0])
 
+            # Si la distance actuelle est plus grande que la distance enregistrée, ignorer cette itération
             if current_dist > dist[current_node]: continue
+
+            # Exploration des voisins et mise à jour des distances
             for neighbor_node, weight in self.connections[current_node]:
                 distance = current_dist + weight
                 if distance < dist[neighbor_node]:
                     dist[neighbor_node] = distance
                     queue.append((neighbor_node, distance))
 
+        # Reconstruction du chemin à partir du nœud d'arrivée
         path = []
         current_node = end_node
+        
         while current_node != start_node:
             path.append(current_node)
+            
             for neighbor_node, weight in self.connections[current_node]:
+                # Trouver le nœud précédent en suivant le chemin des distances minimales enregistrées
                 if dist[current_node] == dist[neighbor_node] + weight:
                     current_node = neighbor_node
                     break
+        
+        # Ajout du nœud de départ et inversion de la liste pour obtenir le chemin dans le bon ordre
         path.append(start_node); path.reverse()
         return path
     
     
     def create_routing_tables(self):
+        '''
+        Fonction qui calcul les tables de routage pour chaque nœud du Network
+        '''
+
+        # On parcourt tout les nœuds présents dans le réseau
         for start_node in self.nodes:
-            index = 0
+            index = 0                   # Initialiser l'index pour parcourir les nœuds destinataires
+
+            # Continuer tant que la table de routage n'est pas complète pour le nœud de départ
             while len(start_node.routing_table) != len(self.nodes) - 1:
-                end_node : Node = self.nodes[index]
+                end_node : Node = self.nodes[index]     # Sélection du nœud de destination
                 
+
+                # Vérifier si le nœud de destination n'est pas déjà dans la table de routage du nœud de départ
                 if not start_node.routing_table.get(end_node):
+                    # Calculer le plus court chemin du nœud de départ (start_node) au nœud de destination (end_node)
                     path = self.shortest_weighted_path(start_node, end_node)
+
+                    # On remplit la table de routage pour chaque nœud sur le chemin avec le prochain nœud vers la destination
                     for index_node in range(len(path) - 1):
                         sub_node : Node = path[index_node]
                         sub_node.routing_table[end_node] = path[index_node + 1]
-                index += 1
+
+                index += 1  # On incrémente bien l'indice pour faire le prochain nœud
 
 
     def reconstruct_path(self, start : Node, end : Node) -> list[Node]: 
