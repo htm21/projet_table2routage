@@ -178,6 +178,7 @@ class Network(tk.Canvas):                             # Création de la class Ne
                 if len(fill_tracker) == len(self.tier2_nodes):
                     break
 
+
     def connect_tier_3_nodes(self) -> None:
         ''' 
         Fonction qui gère les connections des Tier3 
@@ -265,7 +266,7 @@ class Network(tk.Canvas):                             # Création de la class Ne
 
     def shortest_weighted_path(self, start_node, end_node) -> list[Node]:
         '''
-        Fonction qui retourne le plus court chemin entre deux nœuds choisis, en utilisant les tables de routage et Dijkstra
+        Fonction qui retourne le plus court chemin entre deux nœuds choisis, en utilisant l'algo de Dijkstra
         '''
 
         # Initialisation de la table des distances avec infini pour tous les nœuds sauf le nœud de départ
@@ -312,7 +313,7 @@ class Network(tk.Canvas):                             # Création de la class Ne
 
     def reconstruct_path(self, start : Node, end : Node) -> list[Node]: 
         '''
-        Fonction qui retourne le plus court chemin entre deux nœuds
+        Fonction qui reconstruit le plus court chemin entre deux nœuds grâce au tables de routage des nœuds 
         '''
         path, node, pointer = [start], start, end             # on initialise le chemin au nœud de départ, le nœud actuel et le pointeur qui représente le nœud
 
