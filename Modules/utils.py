@@ -20,11 +20,11 @@ NODE_TYPE : dict[str : Node] = {                                                
 
 ALERTS = {
     "Success": {
-
+        "IsConnex" : "The Network is strongly connected!"
         },
     
     "Error" : {
-
+        "IsNotConnex" : "The Network is weakly connected!"
         }
     }
 
@@ -55,15 +55,15 @@ def set_node_boundries(c_width, c_height) -> None:
         "Operator" : {"width" : None, "height" : None}, # 20% screen form "TransitOperator" min width & height
         }
 
-    bb_width_pcent, bb_height_pcent = (c_width * 30) // 100, (c_height * 30) // 100    
+    bb_width_pcent, bb_height_pcent = (c_width * 35) // 100, (c_height * 30) // 100    
     bb_width_min, bb_width_max = c_width - bb_width_pcent, c_width + bb_width_pcent
     bb_height_min, bb_height_max = c_height - bb_height_pcent, c_height + bb_height_pcent
 
-    t_op_width_pcent, t_op_height_pcent = (c_width * 20) // 100, (c_height * 20) // 100
+    t_op_width_pcent, t_op_height_pcent = (c_width * 30) // 100, (c_height * 30) // 100
     t_op_width_min, t_op_width_max = bb_width_min - t_op_width_pcent, bb_width_max + t_op_width_pcent
     t_op_height_min, t_op_height_max = bb_height_min - t_op_height_pcent, bb_height_max + t_op_height_pcent
 
-    op_width_pcent, op_height_pcent = (c_width * 20) // 100, (c_height * 20) // 100
+    op_width_pcent, op_height_pcent = (c_width * 30) // 100, (c_height * 30) // 100
     op_width_min, op_width_max = t_op_width_min - op_width_pcent, t_op_width_max + op_width_pcent
     op_height_min, op_height_max = t_op_height_min - op_height_pcent, t_op_height_max + op_height_pcent
 

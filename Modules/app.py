@@ -34,7 +34,7 @@ class App(object):
         screen_w, screen_h = screen_dimensions(self.parent)
         screen_w_center, screen_h_center = screen_w // 2, screen_h // 2
         
-        self.gui_w, self.gui_h = 1600, 900
+        self.gui_w, self.gui_h = 1600, 1000
         self.gui_w_center, self.gui_h_center = self.gui_w // 2, (self.gui_h // 2) + 20
         self.x, self.y = screen_w_center - self.gui_w_center, screen_h_center - self.gui_h_center
 
@@ -49,12 +49,12 @@ class App(object):
 
         self.MAIN_FRAME = tk.Frame(self.parent, background = "#FFFFFF", highlightthickness = 5, highlightbackground = "#1D2123", highlightcolor = "#1D2123")
         self.MAIN_FRAME.pack(anchor = "center", fill = "both", expand = True)
-        
-        self.info_panel = Panel(self.MAIN_FRAME, app = self, background = "#22282a", height = 125)
-        self.info_panel.pack_propagate(0)
 
         self.network = Network(self.MAIN_FRAME, app = self, border = 0, highlightthickness = 0, background = "#171a1c", highlightbackground = "#ffcc22")
         self.network.pack(side = "bottom", fill = "both", expand = True)
+
+        self.info_panel = Panel(self.MAIN_FRAME, app = self, background = "#22282a", height = 130)
+        self.info_panel.pack_propagate(0)
 
         # Widgets ======================================================================
 

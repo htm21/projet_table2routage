@@ -2,6 +2,7 @@ from Modules.custom_button import *
 from Modules.utils import *
 from Modules.node import *                  # On importe les class des Nœuds créé pour pouvoir les utilisés
 from itertools import combinations          # On importe la fonction combinations de itertools pour faciliter la formation de liens (cf connect_tier_1_nodes())
+from time import time
 
 import tkinter as tk                        # On importe le module tkinter pour la mise en place de l'interface graphique de notre application
 import random as rd                         # On importe le module random pour générer quelque truc aléatoirement
@@ -24,9 +25,6 @@ class Network(tk.Canvas):                             # Création de la class Ne
             "Backbone" : (load_to_size("backbone_node", 80, 80), load_to_size("highlight_backbone_node", 80, 80)),
             "TransitOperator" : (load_to_size("transit_operator_node", 60, 60), load_to_size("highlight_transit_operator_node", 60, 60)),
             "Operator" : (load_to_size("operator_node", 30, 30), load_to_size("highlight_operator_node", 30, 30)),
-            "Connectivity" : (load_to_size("connectivity", 65, 65), load_to_size("highlight_connectivity", 65, 65)),
-            "Path" : (load_to_size("path", 65, 65), load_to_size("highlight_path", 65, 65)),
-            "NewNetwork" : (load_to_size("network", 65, 65), load_to_size("highlight_network", 65, 65)),
             }
 
         self.selected_node : Node = None
@@ -35,18 +33,7 @@ class Network(tk.Canvas):                             # Création de la class Ne
         self.create_network_button = CustomButton(parent = self, parent_obj = self, func_arg = "create_network", icons = self.icons["Network"], image = self.icons["Network"][0], compound = "top", text = "Create\nNetwork", justify = "center", font = f"{font} 28 bold", foreground = "#FFFFFF", background = self.kwargs["background"])
         self.create_network_button.place(anchor = "center", relx = 0.5, rely = 0.5)
 
-        self.network_tools = tk.Frame(self, background = "#22282a")
-        self.buffer_frame_1 = tk.Frame(self.network_tools, background = "#1D2123", height = 5)
-        self.buffer_frame_2 = tk.Frame(self.network_tools, background = "#1D2123", width = 5)
-        self.find_path_button = CustomButton(parent = self.network_tools, parent_obj = self, func_arg = "find_path", icons = self.icons["Path"], image = self.icons["Path"][0], background = "#22282a")
-        self.connectivity_button = CustomButton(parent = self.network_tools, parent_obj = self, func_arg = "check_connectivity", icons = self.icons["Connectivity"], image = self.icons["Connectivity"][0], background = "#22282a")
-        self.generate_network = CustomButton(parent = self.network_tools, parent_obj = self, func_arg = "generate_network", icons = self.icons["NewNetwork"], image = self.icons["NewNetwork"][0], background = "#22282a")
 
-        self.buffer_frame_1.pack(side = "top", fill = "x")
-        self.buffer_frame_2.pack(side = "left", fill = "y")
-        self.generate_network.pack(side = "right", padx = 15, pady = 15)
-        self.connectivity_button.pack(side = "right", padx = 15, pady = 15)
-        self.find_path_button.pack(side = "right", padx = 15, pady = 15)
         
         # Logic Stuff ==================================================================
 
@@ -74,7 +61,7 @@ class Network(tk.Canvas):                             # Création de la class Ne
                 x, y = choose_coords(boundries, "Backbone")
                 overlap = self.find_overlapping(x - bb_ovrlp, y - bb_ovrlp, x + bb_ovrlp, y + bb_ovrlp)
 
-            canvas_id = self.create_image(x, y, image = self.icons["Backbone"][0], tags = "node")          
+            canvas_id = self.create_image(x, y, image = self.icons["Backbone"][0], tags = ["node", "obj"])          
             node = Tier1(canvas_id = canvas_id)             # initialisation du Node
     
             self.nodes.append(node)                         # on l'ajoute à la liste des Nodes
@@ -90,7 +77,7 @@ class Network(tk.Canvas):                             # Création de la class Ne
                 x, y = choose_coords(boundries, "TransitOperator")
                 overlap = self.find_overlapping(x - top_ovrlp, y - top_ovrlp, x + top_ovrlp, y + top_ovrlp)
 
-            canvas_id = self.create_image(x, y, image = self.icons["TransitOperator"][0], tags = "node")
+            canvas_id = self.create_image(x, y, image = self.icons["TransitOperator"][0], tags = ["node", "obj"])
             node = Tier2(canvas_id = canvas_id)             # initialisation du Node
             
             self.nodes.append(node)                         # on l'ajoute à la liste des Nodes
@@ -106,7 +93,7 @@ class Network(tk.Canvas):                             # Création de la class Ne
                 x, y = choose_coords(boundries, "Operator")
                 overlap = self.find_overlapping(x - op_ovrlp, y - op_ovrlp, x + op_ovrlp, y + op_ovrlp)
             
-            canvas_id = self.create_image(x, y, image = self.icons["Operator"][0], tags = "node")
+            canvas_id = self.create_image(x, y, image = self.icons["Operator"][0], tags = ["node", "obj"])
             node = Tier3(canvas_id = canvas_id)             # initialisation du Node
             
             self.nodes.append(node)                         # on l'ajoute à la liste des Nodes
@@ -131,7 +118,7 @@ class Network(tk.Canvas):                             # Création de la class Ne
         self.tag_raise("Backbone")
         self.tag_raise("node")
 
-
+    
     def connect_tier_1_nodes(self) -> None:
         ''' 
         Fonction qui gère les connections des Tier1 
@@ -146,7 +133,7 @@ class Network(tk.Canvas):                             # Création de la class Ne
                 node_1, node_2 = node_combinizations[index][0], node_combinizations[index][1]
                 self.connections[node_1].append((node_2, poids)); self.connections[node_2].append((node_1, poids))
                 
-                self.create_line((*self.coords(node_1.canvas_id), *self.coords(node_2.canvas_id)), width = 5, fill = "#2A2226", smooth = True, tags = ["Backbone", f"{node_1.name}", f"{node_2.name}"])
+                self.create_line((*self.coords(node_1.canvas_id), *self.coords(node_2.canvas_id)), width = 3, fill = "#2A2226", smooth = True, tags = ["connection", "Backbone", f"{node_1.name}", f"{node_2.name}", "obj"])
 
         for node in self.tier1_nodes:
             node.backbone_connections += len(self.connections[node])
@@ -168,10 +155,14 @@ class Network(tk.Canvas):                             # Création de la class Ne
                     
                     backbone_connections -= 1
                     node_1.backbone_connections += 1; node_2.transit_opertator_connections += 1
-                    self.create_line((*self.coords(node_1.canvas_id), *self.coords(node_2.canvas_id)), width = 3, fill = "#1E2422", smooth = True, tags = ["TransitOperator", f"{node_1.name}", f"{node_2.name}"])
+                    self.create_line((*self.coords(node_1.canvas_id), *self.coords(node_2.canvas_id)), width = 3, fill = "#1E2422", smooth = True, tags = ["connection", "TransitOperator", f"{node_1.name}", f"{node_2.name}", "obj"])
             
             transit_opertator_connections = rd.randint(2, 3) - node_1.transit_opertator_connections   # Même logique pour les liens T2-T2
+
+            fill_tracker : dict[Node : int] = {}
+
             while transit_opertator_connections > 0:
+                
                 node_2 = rd.choice(self.tier2_nodes)            # on choisi un Tier2 aléatoirement 
                 if not any([node_2 is connection[0] for connection in self.connections[node_1]]) and node_1 is not node_2 and node_2.transit_opertator_connections <= 2:  # Même logique
                     poids = rd.randint(10, 20)                                                                              # ...
@@ -179,9 +170,11 @@ class Network(tk.Canvas):                             # Création de la class Ne
                     
                     transit_opertator_connections -= 1
                     node_1.transit_opertator_connections += 1; node_2.transit_opertator_connections += 1
-                    self.create_line((*self.coords(node_1.canvas_id), *self.coords(node_2.canvas_id)), width = 3, fill = "#1E2422", smooth = True, tags = ["TransitOperator", f"{node_1.name}", f"{node_2.name}"])
+                    self.create_line((*self.coords(node_1.canvas_id), *self.coords(node_2.canvas_id)), width = 3, fill = "#1E2422", smooth = True, tags = ["connection", "TransitOperator", f"{node_1.name}", f"{node_2.name}", "obj"])
+                fill_tracker[node_2] = node_2.transit_opertator_connections
+                if len(fill_tracker) == len(self.tier2_nodes):
+                    break
 
-    
     def connect_tier_3_nodes(self) -> None:
         ''' 
         Fonction qui gère les connections des Tier3 
@@ -197,7 +190,7 @@ class Network(tk.Canvas):                             # Création de la class Ne
 
                     opertator_connections -= 1
                     node_1.transit_opertator_connections += 1; node_2.opertator_connections += 1
-                    self.create_line((*self.coords(node_1.canvas_id), *self.coords(node_2.canvas_id)), width = 1, fill = "#232A22", smooth = True, tags = ["Operator", f"{node_1.name}", f"{node_2.name}"])
+                    self.create_line((*self.coords(node_1.canvas_id), *self.coords(node_2.canvas_id)), width = 3, fill = "#232A22", smooth = True, tags = ["connection", "Operator", f"{node_1.name}", f"{node_2.name}", "obj"])
 
 
 ##############################################################################################################################################################################
@@ -223,43 +216,6 @@ class Network(tk.Canvas):                             # Création de la class Ne
         self.PP(traiter, depart)                       # on lance la fonction PP récursive
         
         return len(traiter) == len(self.nodes)         # on vérifie si la longueur de la liste "traiter" est égale la taille de la liste contenant tout les nodes (self.nodes)
-
-
-##############################################################################################################################################################################
-####################################################### TABLES DE ROUTAGE ---> NEXT HOP ######################################################################################
-##############################################################################################################################################################################
-
-
-    def next_hop(self, start_node) -> dict[Node : Node]:
-        ''' 
-        Fonction qui forme la table de routage pour le noeud en entrée, utilisation de https://www.youtube.com/watch?v=LGiRB_lByh0&t=1027s 
-        '''
-        
-        distance = {node : float("inf") for node in self.connections}           # comme dans djikstra, on fixe tout les noeuds à distance "infini" 
-        distance[start_node] = 0                                                # alors que le node de départ "start_node" est nul
-
-        next_hope = {node : None for node in self.connections}                  # de même pour le prochain noeud, ils sont tous nuls au départ
-        next_hope[start_node] = start_node                                      # le prochain noeud pour atteindre le noeud de départ est lui même
-        
-        unvisited = set(self.connections.keys())                                # set qui permettra de vérifier quels Nodes on déjà étaient visités
-
-        while unvisited :
-            current_node = min(unvisited, key= lambda node : distance[node])    # mini par rapport à leur distance, on prendra toujours start_node en premier car sa distance vaudra toujours 0
-            unvisited.remove(current_node)                                      # Node visiter, on le retire alors du set des non-visité
-
-            for neighbor, weight in self.connections[current_node] :            # on parcours les connections du Node actuel en séparant Tier(neighbor) et poids(weight)
-                if neighbor in unvisited :                                     
-                    new_dist = distance[current_node] + weight                  # on calcul la distance, si elle est meilleure (plus faible) => on mets à jour
-
-                    if new_dist < distance[neighbor] :                          # dans djikstra, si la val est inférieur au poids actuelle
-                        distance[neighbor] = new_dist                           # -> on la modifie, sinon on passe
-
-                    if current_node == start_node :                             # si connecté au noeud de départ
-                        next_hope[neighbor] = neighbor                          # alors le prochain noeud pour atteindre son voisin est lui même
-                    else :
-                        next_hope[neighbor] = next_hope[current_node]           # sinon on place comme prochain noeud, le prochain noeud du noeud actuel
-                        
-        return next_hope                                                        # on renvoie la table de routage du start_node
 
 
     def shortest_weighted_path(self, start_node, end_node) -> list[Node]:
@@ -290,8 +246,8 @@ class Network(tk.Canvas):                             # Création de la class Ne
                     break
         path.append(start_node); path.reverse()
         return path
-    
-    
+
+
     def create_routing_tables(self):
         for start_node in self.nodes:
             index = 0
@@ -300,10 +256,18 @@ class Network(tk.Canvas):                             # Création de la class Ne
                 
                 if not start_node.routing_table.get(end_node):
                     path = self.shortest_weighted_path(start_node, end_node)
-                    for index_node in range(len(path) - 1):
-                        sub_node : Node = path[index_node]
-                        sub_node.routing_table[end_node] = path[index_node + 1]
+                    
+                    for index_main_node in range(len(path)):
+                        main_node : Node = path[index_main_node]
+                        for index_sub_node in range(len(path)):
+                            sub_node : Node = path[index_sub_node]
+
+                            if not main_node == sub_node:
+                                index_direction = 1 if index_main_node < index_sub_node else -1
+                                main_node.routing_table[sub_node] = path[index_main_node + index_direction]
+                
                 index += 1
+
 
 
     def reconstruct_path(self, start : Node, end : Node) -> list[Node]: 
@@ -313,11 +277,26 @@ class Network(tk.Canvas):                             # Création de la class Ne
         path, node, pointer = [start], start, end                               # on initialise le chemin au nœud de départ, le nœud actuel et le pointeur qui représente le nœud
 
         while node is not end:
-            print(f"Next node {node.routing_table[pointer]}")
             node = node.routing_table[pointer]
             path.append(node)
         
         return path
+
+
+    def calc_path_weight(self, path : list[Node]) -> int:
+        weight = 0
+
+        for index_node in range(len(path) - 1):
+            main_node : Node = path[index_node]
+            next_node : Node = path[index_node + 1]
+
+            for connection in self.connections[main_node]:
+                sub_node : Node = connection[0]
+                if sub_node == next_node:
+                    weight += connection[1]
+
+        return weight
+
 
 
     # GUI Functions ====================================================================
@@ -334,10 +313,12 @@ class Network(tk.Canvas):                             # Création de la class Ne
             self.deselect_object()
             self.app.info_panel.set_object_info(self)
             return
-        
-        if self.selected_node: 
+
+
+        if self.selected_node or self.find_withtag("highlight_path"): 
             self.deselect_object()
         
+
         if not "node" in self.gettags(object_ids[-1]): 
             self.deselect_object()
             self.app.info_panel.set_object_info(self)
@@ -370,6 +351,26 @@ class Network(tk.Canvas):                             # Création de la class Ne
         self.selected_node = None
         self.dtag("selected")
 
+        if ids := self.find_withtag("highlight_path"):
+            for canvas_id in ids:
+                obj_tags = self.gettags(canvas_id)
+                
+                if "node" in obj_tags:
+                    node : Node = self.canvas_id_to_node[canvas_id]
+                    self.itemconfig(node.canvas_id, image = self.icons[node.type][0])
+                
+                elif "Backbone" in obj_tags:
+                    self.itemconfig(canvas_id, fill = "#2A2226")
+                
+                elif "TransitOperator" in obj_tags:
+                    self.itemconfig(canvas_id, fill = "#1E2422")
+                
+                elif "Operator" in obj_tags:
+                    self.itemconfig(canvas_id, fill = "#232A22")
+            
+            self.dtag("highlight_path")
+
+
 
     def select_path_nodes(self) -> None:
         '''
@@ -383,34 +384,91 @@ class Network(tk.Canvas):                             # Création de la class Ne
         while len(nodes) < 2:                                                   # tant qu'on a deux nodes dans le network, les connexions sont possibles
             if self.selected_node:
                 nodes.append(self.selected_node)
-                self.deselect_object()
+                self.selected_node = None
             self.app.parent.update()
 
         self.config(highlightthickness = 0)
         return nodes
 
 
+    def highlight_path(self, path : list[Node]) -> None:
+        self.selected_node = path[0]
+        self.deselect_object()
+        self.selected_node = path[-1]
+        self.deselect_object()
+            
+        
+        for node_index in range(len(path) - 1):
+            node : Node = path[node_index]
+            next_node : Node = path[node_index + 1]
+
+            line_ids = set(self.find_withtag(node.name)).intersection(set(self.find_withtag(next_node.name)))
+            for canvas_id in line_ids:
+                self.addtag_withtag("highlight_path", canvas_id)
+                self.itemconfig(canvas_id, fill = "#FFCC22")
+
+            for node in path:
+                self.itemconfig(node.canvas_id, image = self.icons[node.type][1])
+                self.addtag_withtag("highlight_path", node.canvas_id)
+
+
     def passdown_func(self, arg : str) -> None:
         if arg == "create_network":
             self.create_network_button.place_forget()
             self.app.info_panel.pack(side = "top", fill = "x")
-            self.network_tools.place(anchor = "se", relx = 1, rely = 1)
- 
+
+
+            print("creating nodes")
             self.nodes_creation()
+
+            print("creating connections")
             self.connect_nodes()
+
             print("creating routing tables")
+            start = time()
             self.create_routing_tables()
+            end = time()
+            print(f"Created routing tables in {end - start : 0.2f}s")
 
             self.app.info_panel.set_object_info(self)
         
         elif arg == "find_path":
             nodes = self.select_path_nodes()
-            print(f"Is connexe : {self.main_dfs()}")
-            print(f"Selected Nodes : {nodes}")
-            print(f"Path to take : {self.reconstruct_path(*nodes)}")
-        
+            path = self.reconstruct_path(*nodes)
+            self.highlight_path(path)
+            self.app.info_panel.set_path_info(path, self.calc_path_weight(path))
+
         elif arg == "check_connectivity":
-            pass
-        
+            conectivity = False
+            try: conectivity = self.main_dfs()
+            except: pass
+            
+            self.app.alert = ("Success", "IsConnex") if conectivity else ("Error", "IsNotConnex")
+            self.event_generate("<<Alert>>")
+
         elif arg == "generate_network":
-            pass
+            self.delete("obj")
+            self.app.parent.update()
+
+            self.nodes = []
+            self.connections = {}
+            self.tier1_nodes = []
+            self.tier2_nodes = []
+            self.tier3_nodes = []
+            self.canvas_id_to_node = {}
+            Tier1.instance_counter, Tier2.instance_counter, Tier3.instance_counter = 0, 0, 0
+
+            self.app.info_panel.set_object_info(self)
+            print("creating nodes")
+            self.nodes_creation()
+
+            print("creating connections")
+            self.connect_nodes()
+
+            print("creating routing tables")
+            start = time()
+            self.create_routing_tables()
+            end = time()
+            print(f"Created routing tables in {end - start : 0.2f}s")
+            
+            self.app.info_panel.set_object_info(self)
