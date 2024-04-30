@@ -1,6 +1,7 @@
 import tkinter as tk
 import customtkinter as ctk
 
+
 from Modules.network import *
 from Modules.utils import *
 
@@ -44,7 +45,6 @@ class Panel(tk.Frame):
             "Operator" : "Op"
             }
 
-        self.path = None
 
         self.buffer_frame_1 = tk.Frame(self, background = "#1D2123", height = 5)
         self.buffer_frame_1.pack(side = "bottom", fill = "x")

@@ -251,8 +251,9 @@ class Network(tk.Canvas):                             # Création de la class Ne
                         for index_sub_node in range(len(path)):                 # même logique
                             sub_node : Node = path[index_sub_node]              # on sélectionne un sous noeud à cet indice
 
-                            if not main_node == sub_node:                       # on vérifie que c'est pas le même
-                                index_direction = 1 if index_main_node < index_sub_node else -1         
+                            # on vérifie que c'est pas le même et dans quelle direction selectionné le nœud en fonction de sa position dans le chemin
+                            if not main_node == sub_node:                       
+                                index_direction = 1 if index_main_node < index_sub_node else -1                 
                                 main_node.routing_table[sub_node] = path[index_main_node + index_direction]     
                 
                 index += 1          # passage au nœud suivant
