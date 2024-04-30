@@ -126,7 +126,7 @@ class Network(tk.Canvas):                             # Création de la class Ne
         ''' 
         Fonction qui gère les connections des Tier1 
         '''
-        possible_connections = int((10 * (10 - 1)) / 2)
+        possible_connections = int((10 * (10 - 1)) / 2) # (n * (n - 1)) / 2 = numero de conections possibles
         node_combinizations = list(combinations(self.tier1_nodes, 2))
         connections = [rd.random() < 0.75 for _ in range(possible_connections)]         # connections possibles T1-T1 avec une probabilité de 75%
 
@@ -421,7 +421,6 @@ class Network(tk.Canvas):                             # Création de la class Ne
             self.dtag("highlight_path")
 
 
-
     def select_path_nodes(self) -> None:
         '''
         Fonction qui permet à l'utilisateur de créer une connexion entre deux Nodes du Network (précédemment créer)
@@ -471,6 +470,8 @@ class Network(tk.Canvas):                             # Création de la class Ne
         '''
         if arg == "create_network":
             self.create_network_button.place_forget()
+            self.app.parent.update()
+            
             self.app.info_panel.pack(side = "top", fill = "x")
 
 
@@ -504,6 +505,7 @@ class Network(tk.Canvas):                             # Création de la class Ne
 
         elif arg == "generate_network":
             self.delete("obj")
+            self.app.info_panel.path_display.delete("obj")
             self.app.parent.update()
 
             self.nodes = []
