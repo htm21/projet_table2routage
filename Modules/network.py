@@ -45,6 +45,9 @@ class Network(tk.Canvas):                             # Création de la class Ne
         self.tier3_nodes : list[Node] = []                      # ... Tier3
 
 
+    #########################################################################################################################################################
+    ######################################## INITIALISATION DES NŒUDS PRÉSENTS DANS LE RÉSEAU ###############################################################
+    #########################################################################################################################################################
 
     def nodes_creation(self) -> None :      # La fonction qui va créer nos Nodes de manère uniforme !!
         ''' Fonction qui va initialiser nos Tier de manière uniforme, en initialisant également leur liste de connections, etc. '''
@@ -103,7 +106,7 @@ class Network(tk.Canvas):                             # Création de la class Ne
 
 
     #########################################################################################################################################################
-    ######################################## CRÉATION DU GRAPHE NON ORIENTÉ DU RÉSEAU ########################################################################
+    ######################################## CRÉATION DU GRAPHE NON ORIENTÉ DU RÉSEAU #######################################################################
     #########################################################################################################################################################
 
     def connect_nodes(self) -> None:
@@ -194,7 +197,7 @@ class Network(tk.Canvas):                             # Création de la class Ne
 
 
 ##############################################################################################################################################################################
-######################################## COMMENT VERIFIER SI UN GRAPH EST CONNEXE ? GRÂCE AUX PARCOURS ########################################################################
+######################################## COMMENT VERIFIER SI UN GRAPH EST CONNEXE ? GRÂCE AUX PARCOURS #######################################################################
 ##############################################################################################################################################################################
     
 
@@ -218,9 +221,51 @@ class Network(tk.Canvas):                             # Création de la class Ne
         return len(traiter) == len(self.nodes)         # on vérifie si la longueur de la liste "traiter" est égale la taille de la liste contenant tout les nodes (self.nodes)
 
 
+##############################################################################################################################################################################
+############################################################ C'EST PARTI POUR LES TABLES DE ROUTAGE ? ########################################################################
+##############################################################################################################################################################################
+
+
+    def create_routing_tables(self):
+        '''
+        Fonction qui calcul les tables de routage pour chaque nœud du Network
+        '''
+
+        # On parcourt tout les nœuds présents dans le réseau
+        for start_node in self.nodes:
+            index = 0                   # Initialiser l'index pour parcourir les nœuds destinataires
+
+            # Continuer tant que la table de routage n'est pas complète pour le nœud de départ
+            while len(start_node.routing_table) != len(self.nodes) - 1:
+                end_node : Node = self.nodes[index]     # Sélection du nœud de destination
+                
+
+                # Vérifier si le nœud de destination n'est pas déjà dans la table de routage du nœud de départ
+                if not start_node.routing_table.get(end_node):
+                    # Calculer le plus court chemin du nœud de départ (start_node) au nœud de destination (end_node) (voir ci-dessous)
+                    path = self.shortest_weighted_path(start_node, end_node)
+                    
+                    for index_main_node in range(len(path)):                    # on parcourt les indice de la liste path
+                        main_node : Node = path[index_main_node]                # on sélectionne un node principal
+                        for index_sub_node in range(len(path)):                 # même logique
+                            sub_node : Node = path[index_sub_node]              # on sélectionne un sous noeud à cet indice
+
+                            if not main_node == sub_node:                       # on vérifie que c'est pas le même
+                                index_direction = 1 if index_main_node < index_sub_node else -1         
+                                main_node.routing_table[sub_node] = path[index_main_node + index_direction]     
+                
+                index += 1          # passage au nœud suivant
+
+
+##############################################################################################################################################################################
+############################################################ POUR FINIR, PLUS COURT CHEMIN ! #################################################################################
+##############################################################################################################################################################################
+
+
+
     def shortest_weighted_path(self, start_node, end_node) -> list[Node]:
         '''
-        Fonction qui retourne le plus court chemin entre deux nœuds choisis 
+        Fonction qui retourne le plus court chemin entre deux nœuds choisis, en utilisant les tables de routage et Dijkstra
         '''
 
         # Initialisation de la table des distances avec infini pour tous les nœuds sauf le nœud de départ
@@ -242,7 +287,7 @@ class Network(tk.Canvas):                             # Création de la class Ne
             # Exploration des voisins et mise à jour des distances
             for neighbor_node, weight in self.connections[current_node]:
                 distance = current_dist + weight
-                if distance < dist[neighbor_node]:
+                if distance < dist[neighbor_node]:                                      
                     dist[neighbor_node] = distance
                     queue.append((neighbor_node, distance))
 
@@ -264,64 +309,40 @@ class Network(tk.Canvas):                             # Création de la class Ne
         return path
 
 
-    def create_routing_tables(self):
-        '''
-        Fonction qui calcul les tables de routage pour chaque nœud du Network
-        '''
-
-        # On parcourt tout les nœuds présents dans le réseau
-        for start_node in self.nodes:
-            index = 0                   # Initialiser l'index pour parcourir les nœuds destinataires
-
-            # Continuer tant que la table de routage n'est pas complète pour le nœud de départ
-            while len(start_node.routing_table) != len(self.nodes) - 1:
-                end_node : Node = self.nodes[index]     # Sélection du nœud de destination
-                
-
-                # Vérifier si le nœud de destination n'est pas déjà dans la table de routage du nœud de départ
-                if not start_node.routing_table.get(end_node):
-                    # Calculer le plus court chemin du nœud de départ (start_node) au nœud de destination (end_node)
-                    path = self.shortest_weighted_path(start_node, end_node)
-                    
-                    for index_main_node in range(len(path)):
-                        main_node : Node = path[index_main_node]
-                        for index_sub_node in range(len(path)):
-                            sub_node : Node = path[index_sub_node]
-
-                            if not main_node == sub_node:
-                                index_direction = 1 if index_main_node < index_sub_node else -1
-                                main_node.routing_table[sub_node] = path[index_main_node + index_direction]
-                
-                index += 1
-
-
 
     def reconstruct_path(self, start : Node, end : Node) -> list[Node]: 
         '''
         Fonction qui retourne le plus court chemin entre deux nœuds
         '''
-        path, node, pointer = [start], start, end                               # on initialise le chemin au nœud de départ, le nœud actuel et le pointeur qui représente le nœud
+        path, node, pointer = [start], start, end             # on initialise le chemin au nœud de départ, le nœud actuel et le pointeur qui représente le nœud
 
-        while node is not end:
-            node = node.routing_table[pointer]
-            path.append(node)
+        while node is not end:                                # Tant que le nœud actuel n'est pas le destination
+            node = node.routing_table[pointer]                # On MAJ le node actuelle par le node qui pointe vers la destination finale (dans la table de routage du node actuel)
+            path.append(node)                                 # on l'ajoute au chemin 
         
-        return path
+        return path                                           # on retourne le chemin 
 
 
     def calc_path_weight(self, path : list[Node]) -> int:
-        weight = 0
+        '''
+        Fonction qui va retourner le poids total du plus court chemin généré entre deux nodes
+        '''
+        weight = 0                                      # Poids nul de base 
 
-        for index_node in range(len(path) - 1):
-            main_node : Node = path[index_node]
+        for index_node in range(len(path) - 1):         # on parcours tous les indices de la liste du chemin
+
+            # On récupère les liens 2 à 2 pour obtenir le poids
+            main_node : Node = path[index_node]         
             next_node : Node = path[index_node + 1]
 
+            # On ajoute le poids si celui ci correspond au node voulu
             for connection in self.connections[main_node]:
                 sub_node : Node = connection[0]
                 if sub_node == next_node:
-                    weight += connection[1]
+                    weight += connection[1]         # C'est ce qu'on fait ici
 
-        return weight
+        return weight                               # on retourne le poids du chemin
+
 
 
 
@@ -331,7 +352,7 @@ class Network(tk.Canvas):                             # Création de la class Ne
 
     def select_object(self, event : tk.Event):
         '''
-        Fonction qui gère les interactions utilisateur - interface graphique 
+        Fonction qui gère la mise en évidence d'un nœud lorsqu'il est sélectionné par l'utilisateur (surbrillance des bords)
         '''
         object_ids = self.find_overlapping(event.x, event.y, event.x, event.y) # Finds canvas item closest to cursor      
         
@@ -362,6 +383,9 @@ class Network(tk.Canvas):                             # Création de la class Ne
 
 
     def deselect_object(self) -> None:
+        '''
+        Fonction qui gère la mise en évidence d'un nœud lorsqu'il n'est pas sélectionner
+        '''
         if self.selected_node:
             self.itemconfig(self.selected_node.canvas_id, image = self.icons[self.selected_node.type][0])
         
@@ -418,6 +442,9 @@ class Network(tk.Canvas):                             # Création de la class Ne
 
 
     def highlight_path(self, path : list[Node]) -> None:
+        '''
+        Fonction qui va permettre de mettre en évidence le plus court chemin entre deux nœuds
+        '''
         self.selected_node = path[0]
         self.deselect_object()
         self.selected_node = path[-1]
@@ -439,6 +466,9 @@ class Network(tk.Canvas):                             # Création de la class Ne
 
 
     def passdown_func(self, arg : str) -> None:
+        '''
+        Fonction qui va gérer les boutons et leurs actions
+        '''
         if arg == "create_network":
             self.create_network_button.place_forget()
             self.app.info_panel.pack(side = "top", fill = "x")
